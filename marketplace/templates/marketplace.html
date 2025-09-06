@@ -1,0 +1,1109 @@
+{% extends 'base.html' %}
+{% block title %}Marketplace - Basix{% endblock %}
+{% block content %}
+
+<script src="https://static.sumsub.com/idensic/static/sumsub-kyc.js"></script>
+
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Title + Subtitle -->
+<!-- Marketplace Title Section -->
+<section class="relative mb-16 text-center px-4">
+  <!-- Title -->
+  <h1 class="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight" style="color: darkgreen;">
+    Marketplace
+  </h1>
+
+  <!-- Subtitle -->
+  <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+    Discover and invest in 
+    <span class="font-semibold text-gray-800">tokenized phigital assets</span> —  
+    a seamless blend of <span class="font-medium text-gray-700">real estate</span> 
+    and <span class="font-medium text-gray-700">digital innovation</span>.
+  </p>
+</section>
+
+
+
+<!-- FILTER BAR -->
+<section class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 md:p-4 mb-6" style="margin-top: -30px;">
+  <div class="flex flex-wrap items-center gap-3">
+    <!-- Search -->
+    <label class="flex-1 min-w-[220px]">
+      <div class="relative">
+        <input 
+          class="w-full h-11 pl-10 pr-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-300 placeholder-gray-400 text-sm"
+          type="text" 
+          placeholder="Search properties..." 
+        />
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/>
+        </svg>
+      </div>
+    </label>
+
+    <!-- Location select -->
+    <button class="h-11 px-4 rounded-lg border border-gray-300 bg-white inline-flex items-center gap-2 text-gray-700 hover:border-emerald-400 hover:bg-gray-50 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-300">
+      <span>All Locations</span>
+      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+
+    <!-- Type select -->
+    <button class="h-11 px-4 rounded-lg border border-emerald-500/60 bg-white inline-flex items-center gap-2 text-gray-800 hover:border-emerald-600 hover:border-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-300">
+      <span>All Types</span>
+      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+
+    <!-- Filter icon -->
+    <button class="h-11 w-11 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-center text-sm focus:outline-none focus:ring-1 focus:ring-emerald-300">
+      <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M6 12h12M9 18h6"/>
+      </svg>
+    </button>
+
+    <!-- View toggles -->
+    <div class="flex items-center gap-2">
+      <button id="gridBtn" 
+        class="h-11 w-11 rounded-lg flex items-center justify-center font-medium transition 
+               bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>
+        </svg>
+      </button>
+      
+      <button id="listBtn" 
+        class="h-11 w-11 rounded-lg flex items-center justify-center font-medium transition 
+               border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-emerald-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 6h12M4 6h.01M8 12h12M4 12h.01M8 18h12M4 18h.01"/>
+        </svg>
+      </button>
+    </div>
+
+    
+{% if user.is_authenticated %}
+  {% if kyc_verified %}
+    <div class="flex flex-col items-center gap-2">
+      <button 
+          onclick="openAddListingModal()"
+          class="px-6 py-3 bg-emerald-600 rounded-2xl shadow-xl hover:bg-emerald-700 hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center gap-2">
+        <span class="text-xl text-white">➕</span>
+        <span class="font-semibold text-white">Add Listing</span>
+      </button>
+      {% if kyc_status == 'auto_approved' %}
+        <div class="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <span>Auto-Approved</span>
+        </div>
+        <p class="text-sm text-green-600 text-center max-w-xs font-medium">Verification completed! You can now create listings.</p>
+      {% endif %}
+    </div>
+  {% elif kyc_status == 'pending' %}
+    <div class="flex flex-col items-center gap-2">
+      <button 
+          class="px-6 py-3 bg-yellow-500 rounded-2xl shadow-xl cursor-not-allowed opacity-75 flex items-center justify-center gap-2">
+        <svg class="w-5 h-5 text-white animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span class="font-semibold text-white">Verification Under Review</span>
+      </button>
+      <p class="text-sm text-yellow-600 text-center max-w-xs font-medium">Your verification is being reviewed. We'll notify you once approved.</p>
+    </div>
+  {% elif kyc_status == 'rejected' %}
+    <div class="flex flex-col items-center gap-2">
+      <button 
+          onclick="window.location.href='{% url 'kyc_verification' %}'"
+          class="px-6 py-3 bg-red-500 rounded-2xl shadow-xl hover:bg-red-600 hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center gap-2">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        <span class="font-semibold text-white">Resubmit Verification</span>
+      </button>
+      <p class="text-sm text-red-600 text-center max-w-xs font-medium">Verification was rejected. Please resubmit with correct documents.</p>
+    </div>
+  {% else %}
+    <div class="flex flex-col items-center gap-2">
+      <button 
+          onclick="window.location.href='{% url 'kyc_verification' %}'"
+          class="px-6 py-3 bg-orange-500 rounded-2xl shadow-xl hover:bg-orange-600 hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center gap-2">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <span class="font-semibold text-white">Complete Verification</span>
+      </button>
+      <p class="text-sm text-orange-600 text-center max-w-xs font-medium">Complete verification to unlock listing creation and premium features.</p>
+    </div>
+  {% endif %}
+{% else %}
+  <button 
+      onclick="openModal('loginModal')"
+      class="px-6 py-3 bg-gray-500 rounded-2xl shadow-xl hover:bg-gray-600 hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center gap-2">
+      <span class="text-xl text-white">🔒</span>
+      <span class="font-semibold text-white">Login to Add Listing</span>
+  </button>
+{% endif %}
+
+
+
+  </div>
+
+<!-- PROPERTY LISTINGS -->
+<section class="mt-8">
+  <!-- Results Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900">Available Properties</h2>
+      <p class="text-gray-600 mt-1">{{ listings|length }} propert{{ listings|length|pluralize:"y,ies" }} found</p>
+    </div>
+    
+    <!-- AI Recommendations Badge -->
+    {% if kyc_verified and listings %}
+      <div class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
+        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        <span class="text-sm font-medium text-emerald-700">AI-Powered Recommendations</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Filter Buttons -->
+  <div class="flex flex-wrap gap-3 mb-6">
+    <button id="filterAll" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+      All Properties
+    </button>
+    {% if user.is_authenticated %}
+      <button id="filterMyListings" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+        My Listings
+      </button>
+    {% endif %}
+    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+      Residential
+    </button>
+    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+      Commercial
+    </button>
+    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+      Under $500K
+    </button>
+    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+      AI Verified
+    </button>
+  </div>
+
+  <!-- Property Grid -->
+  {% if listings %}
+    <div id="propertyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for listing in listings %}
+        {% include 'partials/property_card.html' with listing=listing %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16">
+      <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">No Properties Available</h3>
+      <p class="text-gray-600 mb-6 max-w-md mx-auto">
+        There are currently no properties available for viewing. Check back later or create the first listing!
+      </p>
+      {% if kyc_verified %}
+        <button onclick="openAddListingModal()" 
+                class="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">
+          Create First Listing
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+
+  <!-- Add Listing Modal -->
+<div id="addListingModal" class="fixed inset-0 hidden z-[9999] overflow-y-auto">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+  <!-- Centered container -->
+  <div class="relative z-[10000] flex items-center justify-center min-h-full p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
+      <!-- Close button -->
+      <button onclick="closeAddListingModal()"
+              class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl leading-none">
+        &times;
+      </button>
+
+      <h2 class="text-2xl font-semibold mb-4" id="modalTitle">Step 1 of 6: Upload Media</h2>
+
+      <!-- Progress bar -->
+      <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+        <div id="progressBar" class="bg-emerald-500 h-2 rounded-full w-[20%]"></div>
+      </div>
+
+      <form id="listingForm" class="space-y-4" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Step 1: Media -->
+        <div class="step" id="step1">
+          <label class="block text-gray-700 mb-1">Property Images *</label>
+          <input type="file" name="images" multiple required accept="image/*"
+                 class="w-full border rounded-lg px-3 py-2">
+          <p class="text-sm text-gray-500 mt-1">Upload multiple images (JPG, PNG, GIF only)</p>
+
+          <label class="block text-gray-700 mb-1 mt-4">Property Video (optional)</label>
+          <input type="file" name="video" accept="video/*"
+                 class="w-full border rounded-lg px-3 py-2">
+          <p class="text-sm text-gray-500 mt-1">Upload video file (MP4, MOV, AVI)</p>
+        </div>
+
+        <!-- Step 2: Property Details -->
+        <div class="step hidden" id="step2">
+          <label class="block text-gray-700 mb-1">Title *</label>
+          <input type="text" name="title" required class="w-full border rounded-lg px-3 py-2">
+
+          <label class="block text-gray-700 mb-1 mt-2">Description *</label>
+          <textarea name="description" rows="3" required class="w-full border rounded-lg px-3 py-2"></textarea>
+
+          <label class="block text-gray-700 mb-1 mt-2">Location *</label>
+          <input type="text" name="location" required class="w-full border rounded-lg px-3 py-2">
+
+          <label class="block text-gray-700 mb-1 mt-2">Property Type *</label>
+          <select name="property_type" required class="w-full border rounded-lg px-3 py-2">
+            <option value="">Select Type</option>
+            <option>Apartment</option>
+            <option>Villa</option>
+            <option>Commercial</option>
+            <option>Land</option>
+          </select>
+
+          <label class="block text-gray-700 mb-1 mt-2">Size (sq.ft)</label>
+          <input type="number" step="0.01" name="size" class="w-full border rounded-lg px-3 py-2">
+
+          <label class="block text-gray-700 mb-1 mt-2">Bedrooms</label>
+          <input type="number" name="bedrooms" class="w-full border rounded-lg px-3 py-2">
+
+          <label class="block text-gray-700 mb-1 mt-2">Year Built</label>
+          <input type="number" name="year_built" class="w-full border rounded-lg px-3 py-2">
+
+          <label class="block text-gray-700 mb-1 mt-2">Ownership Type</label>
+          <input type="text" name="ownership_type" class="w-full border rounded-lg px-3 py-2">
+        </div>
+
+        <!-- Step 3: Compliance -->
+        <div class="step hidden" id="step3">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-gray-700 mb-1">Title Deed *</label>
+              <input type="file" name="title_deed" required accept=".pdf,.jpg,.jpeg,.png" 
+                     class="w-full border rounded-lg px-3 py-2">
+              <p class="text-sm text-gray-500 mt-1">Upload property title deed (PDF, JPG, PNG)</p>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 mb-1">Tax Certificate *</label>
+              <input type="file" name="tax_certificate" required accept=".pdf,.jpg,.jpeg,.png" 
+                     class="w-full border rounded-lg px-3 py-2">
+              <p class="text-sm text-gray-500 mt-1">Upload tax certificate (PDF, JPG, PNG)</p>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 mb-1">Utility Bills *</label>
+              <input type="file" name="utility_bills" required accept=".pdf,.jpg,.jpeg,.png" 
+                     class="w-full border rounded-lg px-3 py-2">
+              <p class="text-sm text-gray-500 mt-1">Upload utility bills (PDF, JPG, PNG)</p>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 mb-1">KYC / Identity Document *</label>
+              <input type="file" name="kyc_doc" required accept=".pdf,.jpg,.jpeg,.png" 
+                     class="w-full border rounded-lg px-3 py-2">
+              <p class="text-sm text-gray-500 mt-1">Upload identity document (PDF, JPG, PNG)</p>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 mb-1">Other Legal Documents (optional)</label>
+              <input type="file" name="other_docs" multiple accept=".pdf,.jpg,.jpeg,.png" 
+                     class="w-full border rounded-lg px-3 py-2">
+              <p class="text-sm text-gray-500 mt-1">Upload additional legal documents (PDF, JPG, PNG)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Pricing -->
+        <div class="step hidden" id="step4">
+          <label class="block text-gray-700 mb-1">Asking Price (₹)</label>
+          <input type="number" step="0.01" name="price" class="w-full border rounded-lg px-3 py-2">
+
+          <label class="flex items-center mt-3">
+            <input type="checkbox" name="fractionalisation" value="true" class="mr-2">
+            Fractionalisation Option
+          </label>
+
+          <label class="flex items-center mt-3">
+            <input type="checkbox" name="let_agent_suggest" value="true" class="mr-2">
+            Let Valuation Agent Suggest Price
+          </label>
+        </div>
+
+        <!-- Step 5: Wallet Connection -->
+        <div class="step hidden" id="step5">
+          <div class="text-center">
+            <div class="mb-4">
+              <svg class="w-16 h-16 mx-auto text-emerald-600 mb-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Connect Your Wallet</h3>
+              <p class="text-gray-600 mb-4">Connect your wallet to mint NFTs for your property listings.</p>
+            </div>
+            
+            <div id="walletStatus" class="mb-4">
+              {% if user.is_authenticated and user.profile.wallet_address %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="text-green-700 font-medium">Wallet Connected</span>
+                  </div>
+                  <p class="text-sm text-green-600 mt-1">{{ user.profile.wallet_address|truncatechars:20 }}...</p>
+                </div>
+              {% else %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                    <span class="text-yellow-700 font-medium">Wallet Not Connected</span>
+                  </div>
+                  <p class="text-sm text-yellow-600 mt-1">You can still create listings, but NFTs won't be minted automatically.</p>
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="space-y-3">
+              <button type="button" onclick="connectWallet()" 
+                      class="w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-emerald-700 transition-colors">
+                <div class="flex items-center justify-center space-x-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                  </svg>
+                  <span>Connect Wallet</span>
+                </div>
+              </button>
+              
+              <button type="button" onclick="updateWalletAddress()" 
+                      class="w-full bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-xl hover:bg-gray-200 transition-colors">
+                <div class="flex items-center justify-center space-x-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  <span>Update Wallet Address</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6: Preview -->
+        <div class="step hidden" id="step6">
+          <div id="previewContent" class="bg-gray-100 p-3 rounded-lg mb-4 text-sm text-gray-800"></div>
+          <div class="form-check">
+            <input type="checkbox" name="confirm" required class="mr-2">
+            <label>I confirm all information is correct.</label>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-6">
+          <button type="button" id="prevBtn"
+                  class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 text-gray-800 hidden"
+                  onclick="prevStep()">Previous</button>
+          <button type="button" id="nextBtn"
+                  class="px-4 py-2 bg-emerald-600 rounded-lg hover:bg-emerald-700 text-white"
+                  onclick="nextStep()">Next</button>
+          <button type="submit" id="submitBtn"
+                  class="px-4 py-2 bg-emerald-600 rounded-lg hover:bg-emerald-700 text-white hidden">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+const totalSteps = 6;
+let listingId = null;
+
+
+// Show loader overlay
+function showLoader() {
+  // Prevent adding multiple overlays
+  if (document.getElementById('loaderOverlay')) return;
+
+  const loader = document.createElement('div');
+  loader.id = 'loaderOverlay';
+  loader.innerHTML = `
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[11000]">
+      <div class="bg-white p-6 rounded-lg shadow-lg text-lg font-medium flex items-center gap-3">
+        <svg class="animate-spin h-6 w-6 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        Uploading listing... Please wait
+      </div>
+    </div>`;
+  document.body.appendChild(loader);
+
+  // Disable buttons
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('submitBtn').disabled = true;
+}
+
+// Hide loader overlay
+function hideLoader() {
+  const loader = document.getElementById('loaderOverlay');
+  if (loader) loader.remove();
+
+  // Re-enable buttons
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('submitBtn').disabled = false;
+}
+
+
+
+function showStep(step) {
+  document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+  document.getElementById(`step${step}`).classList.remove('hidden');
+
+  document.getElementById('prevBtn').classList.toggle('hidden', step === 1);
+  document.getElementById('nextBtn').classList.toggle('hidden', step === totalSteps);
+  document.getElementById('submitBtn').classList.toggle('hidden', step !== totalSteps);
+
+  document.getElementById('progressBar').style.width = `${(step / totalSteps) * 100}%`;
+  document.getElementById('modalTitle').innerText = `Step ${step} of ${totalSteps}`;
+
+  if (step === 5) generatePreview();
+}
+
+async function saveStep(step) {
+  const formData = new FormData();
+  if (listingId) formData.append('listing_id', listingId);
+
+  const stepDiv = document.getElementById(`step${step}`);
+  stepDiv.querySelectorAll('input, select, textarea').forEach(input => {
+    if (input.type === 'file') {
+      Array.from(input.files).forEach(file => formData.append(input.name, file));
+    } else if ((input.type === 'checkbox' && input.checked) || input.type !== 'checkbox') {
+      formData.append(input.name, input.value);
+    }
+  });
+
+  try {
+    const res = await fetch(`/save_listing_step/${step}/`, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+    });
+    const data = await res.json();
+    if (data.success && data.listing_id) {
+      listingId = data.listing_id;
+      return true;
+    } else {
+      alert(data.error || 'Error saving step');
+      return false;
+    }
+  } catch (err) {
+    console.error(err);
+    alert('An unexpected error occurred while saving step.');
+    return false;
+  }
+}
+
+async function nextStep() {
+  const saved = await saveStep(currentStep);
+  if (saved && currentStep < totalSteps) {
+    currentStep++;
+    showStep(currentStep);
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    showStep(currentStep);
+  }
+}
+
+function generatePreview() {
+  const previewDiv = document.getElementById("previewContent");
+  previewDiv.innerHTML = `
+    <h3 class="text-lg font-semibold mb-2">Property Preview</h3>
+    <p><strong>Title:</strong> ${document.querySelector('[name="title"]').value}</p>
+    <p><strong>Description:</strong> ${document.querySelector('[name="description"]').value}</p>
+    <p><strong>Location:</strong> ${document.querySelector('[name="location"]').value}</p>
+    <p><strong>Type:</strong> ${document.querySelector('[name="property_type"]').value}</p>
+    <p><strong>Size:</strong> ${document.querySelector('[name="size"]').value}</p>
+    <p><strong>Bedrooms:</strong> ${document.querySelector('[name="bedrooms"]').value}</p>
+    <p><strong>Year Built:</strong> ${document.querySelector('[name="year_built"]').value}</p>
+    <p><strong>Ownership:</strong> ${document.querySelector('[name="ownership_type"]').value}</p>
+    <p><strong>Asking Price:</strong> ₹${document.querySelector('[name="price"]').value}</p>
+    <p><strong>Fractionalisation:</strong> ${document.querySelector('[name="fractionalisation"]').checked ? "Yes" : "No"}</p>
+    <p><strong>Let Agent Suggest Price:</strong> ${document.querySelector('[name="let_agent_suggest"]').checked ? "Yes" : "No"}</p>
+  `;
+}
+
+// Submit Step 5
+document.getElementById('listingForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  if (currentStep !== totalSteps) return;
+
+  showLoader();
+
+  const formData = new FormData(this);
+  if (listingId) formData.append('listing_id', listingId);
+
+  try {
+    const res = await fetch('/submit_listing/', {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+    });
+    const data = await res.json();
+
+    hideLoader();
+
+    if (data.success) {
+      alert('Listing submitted successfully! Metadata CID: ' + data.metadata_cid);
+      closeAddListingModal();
+      window.location.reload();
+    } else {
+      // Handle validation errors by showing them on the appropriate form step
+      if (data.validation_errors) {
+        showValidationErrors(data.validation_errors);
+      } else {
+        alert('Error submitting listing: ' + (data.error || 'Unknown error'));
+      }
+    }
+  } catch (err) {
+    hideLoader();
+    console.error(err);
+    alert('An unexpected error occurred. Check console.');
+  }
+});
+
+function showValidationErrors(errors) {
+  // Clear previous errors
+  document.querySelectorAll('.field-error').forEach(el => el.remove());
+  
+  // Map validation errors to form steps
+  const errorMapping = {
+    'Property title too short': { step: 2, field: 'title' },
+    'Property description too short': { step: 2, field: 'description' },
+    'Property location too vague': { step: 2, field: 'location' },
+    'All 4 documents required': { step: 3, field: 'documents' },
+    'All property information required': { step: 2, field: 'basic_info' },
+    'Property details incomplete': { step: 2, field: 'property_details' }
+  };
+  
+  // Find the first error and navigate to that step
+  let targetStep = 2; // Default to step 2 (basic info)
+  let targetField = null;
+  
+  for (const error of errors) {
+    if (errorMapping[error]) {
+      targetStep = errorMapping[error].step;
+      targetField = errorMapping[error].field;
+      break;
+    }
+  }
+  
+  // Navigate to the step with errors
+  currentStep = targetStep;
+  showStep(currentStep);
+  
+  // Show error messages
+  const stepElement = document.getElementById(`step${targetStep}`);
+  if (stepElement) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error bg-red-50 border border-red-200 rounded-lg p-3 mb-4';
+    errorDiv.innerHTML = `
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <h4 class="text-red-800 font-semibold">Please fix the following issues:</h4>
+          <ul class="text-red-700 text-sm mt-1">
+            ${errors.map(error => `<li>• ${error}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+    stepElement.insertBefore(errorDiv, stepElement.firstChild);
+  }
+}
+
+function openAddListingModal() {
+  // Check KYC status before opening modal
+  {% if user.is_authenticated %}
+    {% if kyc_status == 'pending' %}
+      alert('Your verification is currently under review. Please wait for approval before creating listings.');
+      return;
+    {% elif kyc_status == 'rejected' %}
+      alert('Your verification was rejected. Please resubmit your documents.');
+      window.location.href = '{% url "kyc_verification" %}';
+      return;
+    {% elif not kyc_verified %}
+      alert('Please complete verification before creating a listing.');
+      window.location.href = '{% url "kyc_verification" %}';
+      return;
+    {% endif %}
+  {% else %}
+    alert('Please login to create a listing.');
+    return;
+  {% endif %}
+  
+  document.getElementById("addListingModal").classList.remove("hidden");
+  document.body.classList.add("overflow-hidden");
+}
+
+function closeAddListingModal() {
+  document.getElementById("addListingModal").classList.add("hidden");
+  document.body.classList.remove("overflow-hidden");
+}
+
+// Property interaction functions
+function viewPropertyDetails(listingId) {
+  // TODO: Implement detailed property view modal or redirect to detail page
+  console.log(`Viewing details for property ${listingId}`);
+}
+
+// Search functionality
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  const searchTerm = e.target.value.toLowerCase();
+  const propertyCards = document.querySelectorAll('#propertyGrid > div');
+  
+  propertyCards.forEach(card => {
+    const title = card.querySelector('h3').textContent.toLowerCase();
+    const location = card.querySelector('.text-gray-600').textContent.toLowerCase();
+    
+    if (title.includes(searchTerm) || location.includes(searchTerm)) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+});
+
+// Filter functionality (placeholder)
+document.getElementById('locationFilter').addEventListener('click', function() {
+  alert('Location filter will be implemented soon!');
+});
+
+document.getElementById('typeFilter').addEventListener('click', function() {
+  alert('Property type filter will be implemented soon!');
+});
+
+document.getElementById('priceFilter').addEventListener('click', function() {
+  alert('Price range filter will be implemented soon!');
+});
+
+document.getElementById('sortFilter').addEventListener('click', function() {
+  alert('Sort options will be implemented soon!');
+});
+
+showStep(currentStep);
+
+// Wallet connection functions
+function connectWallet() {
+  // Mock wallet connection for now
+  const walletAddress = prompt("Enter your wallet address:");
+  if (walletAddress) {
+    updateWalletAddressInProfile(walletAddress);
+  }
+}
+
+function updateWalletAddress() {
+  const walletAddress = prompt("Enter your wallet address:");
+  if (walletAddress) {
+    updateWalletAddressInProfile(walletAddress);
+  }
+}
+
+function updateWalletAddressInProfile(walletAddress) {
+  fetch('/update-wallet-address/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    },
+    body: JSON.stringify({
+      wallet_address: walletAddress
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Update the wallet status display
+      const walletStatus = document.getElementById('walletStatus');
+      walletStatus.innerHTML = `
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div class="flex items-center justify-center space-x-2">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-green-700 font-medium">Wallet Connected</span>
+          </div>
+          <p class="text-sm text-green-600 mt-1">${walletAddress.substring(0, 20)}...</p>
+        </div>
+      `;
+    } else {
+      alert('Failed to update wallet address: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Failed to update wallet address');
+  });
+}
+</script>
+
+
+
+
+
+
+</section>
+
+
+
+    <!-- GRID VIEW -->
+    <section id="gridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Card 1 -->
+      <div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition group">
+        <div class="relative">
+          <img class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Luxury Beachfront Villa">
+          <span class="absolute top-3 right-3 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">Available</span>
+        </div>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-800 group-hover:text-brand-700 transition">Luxury Beachfront Villa</h3>
+          <p class="text-sm text-gray-500">Malibu, CA</p>
+          <div class="mt-4 space-y-1 text-sm text-gray-600">
+            <p><span class="font-medium">Token ID:</span> <span class="float-right font-semibold">NFT-001</span></p>
+            <p><span class="font-medium">Current Price:</span> <span class="float-right font-semibold text-emerald-600">$2.5M</span></p>
+            <p><span class="font-medium">Valuation:</span> <span class="float-right font-semibold">$2.8M</span></p>
+          </div>
+          <div class="mt-4">
+            <span class="inline-block px-3 py-1 text-xs font-medium border rounded-full text-gray-700 border-gray-300">Residential</span>
+          </div>
+          <button class="w-full mt-6 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-2.5 rounded-xl font-semibold shadow-sm hover:from-emerald-800 hover:to-emerald-900 hover:shadow-md active:scale-95 transition-all">
+  View Details
+</button>
+
+          </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition group">
+        <div class="relative">
+          <img class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800" alt="Modern City Apartment">
+          <span class="absolute top-3 right-3 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">Available</span>
+        </div>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-800 group-hover:text-brand-700 transition">Modern City Apartment</h3>
+          <p class="text-sm text-gray-500">New York, NY</p>
+          <div class="mt-4 space-y-1 text-sm text-gray-600">
+            <p><span class="font-medium">Token ID:</span> <span class="float-right font-semibold">NFT-002</span></p>
+            <p><span class="font-medium">Current Price:</span> <span class="float-right font-semibold text-emerald-600">$1.2M</span></p>
+            <p><span class="font-medium">Valuation:</span> <span class="float-right font-semibold">$1.4M</span></p>
+          </div>
+          <div class="mt-4">
+            <span class="inline-block px-3 py-1 text-xs font-medium border rounded-full text-gray-700 border-gray-300">Apartment</span>
+          </div>
+          <button class="w-full mt-6 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-2.5 rounded-xl font-semibold shadow-sm hover:from-emerald-800 hover:to-emerald-900 hover:shadow-md active:scale-95 transition-all">
+  View Details
+</button>
+</div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition group">
+        <div class="relative">
+          <img class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=800" alt="Rustic Mountain Cabin">
+          <span class="absolute top-3 right-3 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">Sold</span>
+        </div>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-800 group-hover:text-brand-700 transition">Rustic Mountain Cabin</h3>
+          <p class="text-sm text-gray-500">Aspen, CO</p>
+          <div class="mt-4 space-y-1 text-sm text-gray-600">
+            <p><span class="font-medium">Token ID:</span> <span class="float-right font-semibold">NFT-003</span></p>
+            <p><span class="font-medium">Current Price:</span> <span class="float-right font-semibold text-red-600">Sold</span></p>
+            <p><span class="font-medium">Valuation:</span> <span class="float-right font-semibold">$3.1M</span></p>
+          </div>
+          <div class="mt-4">
+            <span class="inline-block px-3 py-1 text-xs font-medium border rounded-full text-gray-700 border-gray-300">Residential</span>
+          </div>
+          <button class="w-full mt-6 bg-gray-200 text-gray-600 py-2.5 rounded-xl font-semibold shadow-sm cursor-not-allowed">Not Available</button>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+<div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition group">
+  <div class="relative">
+    <img class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" 
+         src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" 
+         alt="Beachside Bungalow">
+    <span class="absolute top-3 right-3 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">Available</span>
+  </div>
+  <div class="p-6">
+    <h3 class="text-lg font-semibold text-gray-800 group-hover:text-brand-700 transition">Beachside Bungalow</h3>
+    <p class="text-sm text-gray-500">Miami, FL</p>
+    <div class="mt-4 space-y-1 text-sm text-gray-600">
+      <p><span class="font-medium">Token ID:</span> <span class="float-right font-semibold">NFT-004</span></p>
+      <p><span class="font-medium">Current Price:</span> <span class="float-right font-semibold text-emerald-600">$900K</span></p>
+      <p><span class="font-medium">Valuation:</span> <span class="float-right font-semibold">$1.0M</span></p>
+    </div>
+    <div class="mt-4">
+      <span class="inline-block px-3 py-1 text-xs font-medium border rounded-full text-gray-700 border-gray-300">Residential</span>
+    </div>
+    <button class="w-full mt-6 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-2.5 rounded-xl font-semibold shadow-sm hover:from-emerald-800 hover:to-emerald-900 hover:shadow-md active:scale-95 transition-all">
+  View Details
+</button>
+</div>
+</div>
+
+      <!-- Card 5 -->
+      <div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition group">
+        <div class="relative">
+          <img class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800" alt="Modern Office Space">
+          <span class="absolute top-3 right-3 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">Available</span>
+        </div>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-800 group-hover:text-brand-700 transition">Modern Office Space</h3>
+          <p class="text-sm text-gray-500">San Francisco, CA</p>
+          <div class="mt-4 space-y-1 text-sm text-gray-600">
+            <p><span class="font-medium">Token ID:</span> <span class="float-right font-semibold">NFT-005</span></p>
+            <p><span class="font-medium">Current Price:</span> <span class="float-right font-semibold text-emerald-600">$3.8M</span></p>
+            <p><span class="font-medium">Valuation:</span> <span class="float-right font-semibold">$4.2M</span></p>
+          </div>
+          <div class="mt-4">
+            <span class="inline-block px-3 py-1 text-xs font-medium border rounded-full text-gray-700 border-gray-300">Commercial</span>
+          </div>
+          <button class="w-full mt-6 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-2.5 rounded-xl font-semibold shadow-sm hover:from-emerald-800 hover:to-emerald-900 hover:shadow-md active:scale-95 transition-all">
+  View Details
+</button>
+</div>
+      </div>
+    </section>
+
+    <!-- LIST VIEW -->
+    <section id="listView" class="hidden space-y-6">
+      <!-- List Card 1 -->
+<div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition flex flex-col md:flex-row">
+  <div class="md:w-1/3">
+    <img class="h-56 md:h-full w-full object-cover" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="">
+  </div>
+  <div class="p-6 flex-1">
+    <h3 class="text-xl font-semibold text-gray-800 hover:text-emerald-700 transition">Luxury Beachfront Villa</h3>
+    <p class="text-sm text-gray-500">Malibu, CA</p>
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-gray-600">
+      <p><span class="font-medium">Token ID:</span> NFT-001</p>
+      <p><span class="font-medium">Price:</span> <span class="text-emerald-600 font-semibold">$2.5M</span></p>
+      <p><span class="font-medium">Valuation:</span> $2.8M</p>
+      <p><span class="font-medium">Status:</span> <span class="text-emerald-600 font-semibold">Available</span></p>
+      <p><span class="font-medium">Type:</span> Residential</p>
+    </div>
+    <div class="mt-6 flex gap-3">
+      <button class="px-6 py-2.5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white rounded-xl font-semibold hover:from-emerald-800 hover:to-emerald-900 active:scale-95 transition">View Details</button>
+      <button class="px-6 py-2.5 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 active:scale-95 transition">Compare</button>
+    </div>
+  </div>
+</div>
+
+
+     <!-- List Card 2 -->
+<div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition flex flex-col md:flex-row">
+  <div class="md:w-1/3">
+    <img class="h-56 md:h-full w-full object-cover" src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800" alt="">
+  </div>
+  <div class="p-6 flex-1">
+    <h3 class="text-xl font-semibold text-gray-800 hover:text-emerald-700 transition">Modern City Apartment</h3>
+    <p class="text-sm text-gray-500">New York, NY</p>
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-gray-600">
+      <p><span class="font-medium">Token ID:</span> NFT-002</p>
+      <p><span class="font-medium">Price:</span> <span class="text-emerald-600 font-semibold">$1.2M</span></p>
+      <p><span class="font-medium">Valuation:</span> $1.4M</p>
+      <p><span class="font-medium">Status:</span> <span class="text-emerald-600 font-semibold">Available</span></p>
+      <p><span class="font-medium">Type:</span> Apartment</p>
+    </div>
+    <div class="mt-6 flex gap-3">
+      <button class="px-6 py-2.5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white rounded-xl font-semibold hover:from-emerald-800 hover:to-emerald-900 active:scale-95 transition">View Details</button>
+      <button class="px-6 py-2.5 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 active:scale-95 transition">Compare</button>
+    </div>
+  </div>
+</div>
+
+<!-- List Card 3 -->
+<div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition flex flex-col md:flex-row">
+  <div class="md:w-1/3">
+    <img class="h-56 md:h-full w-full object-cover" src="https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=800" alt="">
+  </div>
+  <div class="p-6 flex-1">
+    <h3 class="text-xl font-semibold text-gray-800 hover:text-emerald-700 transition">Rustic Mountain Cabin</h3>
+    <p class="text-sm text-gray-500">Aspen, CO</p>
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-gray-600">
+      <p><span class="font-medium">Token ID:</span> NFT-003</p>
+      <p><span class="font-medium">Price:</span> <span class="text-red-600 font-semibold">Sold</span></p>
+      <p><span class="font-medium">Valuation:</span> $3.1M</p>
+      <p><span class="font-medium">Status:</span> <span class="text-red-600 font-semibold">Not Available</span></p>
+      <p><span class="font-medium">Type:</span> Residential</p>
+    </div>
+    <div class="mt-6 flex gap-3">
+      <button disabled class="px-6 py-2.5 bg-gray-200 text-gray-600 rounded-xl font-semibold cursor-not-allowed">Not Available</button>
+      <button class="px-6 py-2.5 border border-gray-300 rounded-xl font-medium text-gray-400 cursor-not-allowed">Compare</button>
+    </div>
+  </div>
+</div>
+
+<!-- List Card 4 -->
+<div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition flex flex-col md:flex-row">
+  <div class="md:w-1/3">
+    <img class="h-56 md:h-full w-full object-cover" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" alt="Beachside Bungalow">
+  </div>
+  <div class="p-6 flex-1">
+    <h3 class="text-xl font-semibold text-gray-800 hover:text-emerald-700 transition">Beachside Bungalow</h3>
+    <p class="text-sm text-gray-500">Miami, FL</p>
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-gray-600">
+      <p><span class="font-medium">Token ID:</span> NFT-004</p>
+      <p><span class="font-medium">Price:</span> <span class="text-emerald-600 font-semibold">$900K</span></p>
+      <p><span class="font-medium">Valuation:</span> $1.0M</p>
+      <p><span class="font-medium">Status:</span> <span class="text-emerald-600 font-semibold">Available</span></p>
+      <p><span class="font-medium">Type:</span> Residential</p>
+    </div>
+    <div class="mt-6 flex gap-3">
+      <button class="px-6 py-2.5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white rounded-xl font-semibold hover:from-emerald-800 hover:to-emerald-900 active:scale-95 transition">View Details</button>
+      <button class="px-6 py-2.5 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 active:scale-95 transition">Compare</button>
+    </div>
+  </div>
+</div>
+
+<!-- List Card 5 -->
+<div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition flex flex-col md:flex-row">
+  <div class="md:w-1/3">
+    <img class="h-56 md:h-full w-full object-cover" src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800" alt="">
+  </div>
+  <div class="p-6 flex-1">
+    <h3 class="text-xl font-semibold text-gray-800 hover:text-emerald-700 transition">Modern Office Space</h3>
+    <p class="text-sm text-gray-500">San Francisco, CA</p>
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-gray-600">
+      <p><span class="font-medium">Token ID:</span> NFT-005</p>
+      <p><span class="font-medium">Price:</span> <span class="text-emerald-600 font-semibold">$3.8M</span></p>
+      <p><span class="font-medium">Valuation:</span> $4.2M</p>
+      <p><span class="font-medium">Status:</span> <span class="text-emerald-600 font-semibold">Available</span></p>
+      <p><span class="font-medium">Type:</span> Commercial</p>
+    </div>
+    <div class="mt-6 flex gap-3">
+      <button class="px-6 py-2.5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white rounded-xl font-semibold hover:from-emerald-800 hover:to-emerald-900 active:scale-95 transition">View Details</button>
+      <button class="px-6 py-2.5 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 active:scale-95 transition">Compare</button>
+    </div>
+  </div>
+</div>
+
+    </section>
+  </main>
+
+  <!-- JS for toggles -->
+  <script>
+    const gridBtn = document.getElementById('gridBtn');
+    const listBtn = document.getElementById('listBtn');
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+
+
+function setActive(view) {
+  if (view === 'grid') {
+    gridBtn.className = "h-11 w-11 rounded-lg flex items-center justify-center transition bg-emerald-700 text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-300";
+    listBtn.className = "h-11 w-11 rounded-lg flex items-center justify-center transition border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-emerald-300";
+    gridView.classList.remove("hidden");
+    listView.classList.add("hidden");
+  } else {
+    listBtn.className = "h-11 w-11 rounded-lg flex items-center justify-center transition bg-emerald-700 text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-300";
+    gridBtn.className = "h-11 w-11 rounded-lg flex items-center justify-center transition border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-emerald-300";
+    listView.classList.remove("hidden");
+    gridView.classList.add("hidden");
+  }
+}
+
+    gridBtn.addEventListener('click', () => setActive('grid'));
+    listBtn.addEventListener('click', () => setActive('list'));
+    setActive('grid');
+  </script>
+
+  <!-- Filter functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const filterAllBtn = document.getElementById('filterAll');
+      const filterMyListingsBtn = document.getElementById('filterMyListings');
+      const propertyGrid = document.getElementById('propertyGrid');
+      
+      if (filterAllBtn) {
+        filterAllBtn.addEventListener('click', function() {
+          // Reset all buttons
+          document.querySelectorAll('[id^="filter"]').forEach(btn => {
+            btn.className = 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors';
+          });
+          
+          // Highlight active button
+          filterAllBtn.className = 'px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors';
+          
+          // Show only public properties (minted/sold)
+          if (propertyGrid) {
+            const allCards = propertyGrid.querySelectorAll('.property-card');
+            allCards.forEach(card => {
+              const isOwner = card.dataset.owner === 'true';
+              const hasTokenId = card.dataset.tokenId && card.dataset.tokenId !== '';
+              const isSold = card.dataset.status === 'sold';
+              
+              // Show if it's a public property (minted or sold) OR if it's the owner's property
+              if ((hasTokenId || isSold) || isOwner) {
+                card.style.display = 'block';
+              } else {
+                card.style.display = 'none';
+              }
+            });
+          }
+        });
+      }
+      
+      if (filterMyListingsBtn) {
+        filterMyListingsBtn.addEventListener('click', function() {
+          // Reset all buttons
+          document.querySelectorAll('[id^="filter"]').forEach(btn => {
+            btn.className = 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors';
+          });
+          
+          // Highlight active button
+          filterMyListingsBtn.className = 'px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors';
+          
+          // Show only user's listings
+          if (propertyGrid) {
+            const allCards = propertyGrid.querySelectorAll('.property-card');
+            allCards.forEach(card => {
+              const isOwner = card.dataset.owner === 'true';
+              card.style.display = isOwner ? 'block' : 'none';
+            });
+          }
+        });
+      }
+    });
+  </script>
+
+{% endblock %}

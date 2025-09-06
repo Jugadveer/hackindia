@@ -1,0 +1,387 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Basix{% endblock %}
+{% block content %}
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4" style="color: darkgreen;">
+      My Dashboard
+    </h1>
+    <p class="text-lg text-gray-600">
+      Manage your property listings and track their status
+    </p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center">
+        <div class="p-2 bg-green-100 rounded-lg">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Total Listings</p>
+          <p class="text-2xl font-bold text-gray-900">{{ listings|length }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center">
+        <div class="p-2 bg-green-100 rounded-lg">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Available</p>
+          <p class="text-2xl font-bold text-gray-900">
+            {% for listing in listings %}
+              {% if listing.status == 'available' %}{{ forloop.counter0|add:1 }}{% endif %}
+            {% empty %}0{% endfor %}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center">
+        <div class="p-2 bg-yellow-100 rounded-lg">
+          <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Under Review</p>
+          <p class="text-2xl font-bold text-gray-900">
+            {% for listing in listings %}
+              {% if listing.status in 'submitted,pending_validation' %}{{ forloop.counter0|add:1 }}{% endif %}
+            {% empty %}0{% endfor %}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center">
+        <div class="p-2 bg-red-100 rounded-lg">
+          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Rejected</p>
+          <p class="text-2xl font-bold text-gray-900">
+            {% for listing in listings %}
+              {% if listing.status == 'rejected' %}{{ forloop.counter0|add:1 }}{% endif %}
+            {% empty %}0{% endfor %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+    <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+    <div class="flex flex-wrap gap-4">
+      {% if kyc_verified %}
+        <a href="{% url 'marketplace' %}" 
+           class="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">
+          Add New Listing
+        </a>
+      {% else %}
+        <a href="{% url 'kyc_verification' %}" 
+           class="px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors">
+          Complete KYC to Add Listing
+        </a>
+      {% endif %}
+      <a href="{% url 'marketplace' %}" 
+         class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+        Browse Marketplace
+      </a>
+    </div>
+  </div>
+
+  <!-- My Listings -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="p-6 border-b border-gray-100">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">My Property Listings</h2>
+          <p class="text-gray-600 mt-1">Track the status of your property listings</p>
+        </div>
+        <div class="flex space-x-2">
+          <button id="filterAll" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium">
+            All ({{ listings|length }})
+          </button>
+          <button id="filterAvailable" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
+            Available
+          </button>
+          <button id="filterUnderReview" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
+            Under Review
+          </button>
+          <button id="filterRejected" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
+            Rejected
+          </button>
+        </div>
+      </div>
+    </div>
+
+    
+    
+    {% if listings %}
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="listingsGrid">
+          {% for listing in listings %}
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 listing-card" 
+                 data-status="{{ listing.status }}">
+              <!-- Property Image -->
+              <div class="relative h-48 mb-4 rounded-lg overflow-hidden">
+                {% if listing.cover_image %}
+                  <img src="{{ listing.cover_image.url }}" 
+                       alt="{{ listing.title }}" 
+                       class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                {% endif %}
+                
+                <!-- Status Badge -->
+                <div class="absolute top-3 right-3">
+                  {% if listing.status_badge_color == 'green' %}
+                    <span class="px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                      {{ listing.status_badge_text }}
+                    </span>
+                  {% elif listing.status_badge_color == 'red' %}
+                    <span class="px-3 py-1 bg-red-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                      {{ listing.status_badge_text }}
+                    </span>
+                  {% elif listing.status_badge_color == 'yellow' %}
+                    <span class="px-3 py-1 bg-yellow-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                      {{ listing.status_badge_text }}
+                    </span>
+                  {% else %}
+                    <span class="px-3 py-1 bg-gray-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                      {{ listing.status_badge_text }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Property Details -->
+              <div class="space-y-3">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">{{ listing.title|default:"Untitled Property" }}</h3>
+                  <p class="text-sm text-gray-600">{{ listing.full_location|default:listing.location|default:"Location not specified" }}</p>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <div>
+                    <p class="text-sm text-gray-600">Current Price</p>
+                    <p class="text-lg font-bold {% if listing.status == 'sold' %}text-red-600{% else %}text-green-600{% endif %}">
+                      {{ listing.display_price }}
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm text-gray-600">AI Valuation</p>
+                    <p class="text-sm font-semibold text-gray-700">{{ listing.display_valuation }}</p>
+                  </div>
+                </div>
+
+                <!-- Status-specific information -->
+                {% if listing.status == 'rejected' %}
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p class="text-sm text-red-700">
+                      <strong>Rejection Reason:</strong> 
+                      {{ listing.validation_status|default:"Please contact support for details" }}
+                    </p>
+                  </div>
+                {% elif listing.status in 'submitted,pending_validation' %}
+                  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p class="text-sm text-yellow-700">
+                      <strong>Status:</strong> Your listing is being reviewed by our AI validation system. 
+                      You'll be notified once the review is complete.
+                    </p>
+                  </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="pt-3 border-t border-gray-200">
+                  <div class="flex space-x-2">
+                    {% if listing.status == 'available' %}
+                      <a href="{% url 'property_detail' listing.id %}" class="flex-1 bg-emerald-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors text-center">
+                        View Details
+                      </a>
+                    {% elif listing.status == 'rejected' %}
+                      <button class="flex-1 bg-red-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+                        Edit & Resubmit
+                      </button>
+                    {% elif listing.validation_status == 'approved' and not listing.token_id %}
+                      <button onclick="mintNFT({{ listing.id }})" 
+                              id="mintBtn{{ listing.id }}" 
+                              class="flex-1 bg-emerald-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
+                        Mint NFT
+                      </button>
+                    {% elif listing.token_id %}
+                      <div class="flex-1 bg-green-100 text-green-700 py-2 px-3 rounded-lg text-sm font-medium text-center">
+                        NFT Minted
+                      </div>
+                    {% else %}
+                      <button disabled class="flex-1 bg-gray-300 text-gray-500 py-2 px-3 rounded-lg text-sm font-medium cursor-not-allowed">
+                        Pending Review
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <!-- Empty State -->
+      <div class="p-12 text-center">
+        <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+          <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">No Listings Yet</h3>
+        <p class="text-gray-600 mb-6 max-w-md mx-auto">
+          You haven't created any property listings yet. Start by adding your first property to the marketplace.
+        </p>
+        {% if kyc_verified %}
+          <a href="{% url 'marketplace' %}" 
+             class="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">
+            Create Your First Listing
+          </a>
+        {% else %}
+          <a href="{% url 'kyc_verification' %}" 
+             class="px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors">
+            Complete KYC First
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</main>
+
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const filterButtons = {
+    all: document.getElementById('filterAll'),
+    available: document.getElementById('filterAvailable'),
+    underReview: document.getElementById('filterUnderReview'),
+    rejected: document.getElementById('filterRejected')
+  };
+  
+  const listingCards = document.querySelectorAll('.listing-card');
+  
+  function updateFilterButtons(activeFilter) {
+    // Reset all buttons
+    Object.values(filterButtons).forEach(btn => {
+      btn.className = 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200';
+    });
+    
+    // Highlight active button
+    if (filterButtons[activeFilter]) {
+      filterButtons[activeFilter].className = 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium';
+    }
+  }
+  
+  function filterListings(status) {
+    listingCards.forEach(card => {
+      if (status === 'all' || card.dataset.status === status) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+  
+  // Add event listeners
+  filterButtons.all.addEventListener('click', () => {
+    filterListings('all');
+    updateFilterButtons('all');
+  });
+  
+  filterButtons.available.addEventListener('click', () => {
+    filterListings('available');
+    updateFilterButtons('available');
+  });
+  
+  filterButtons.underReview.addEventListener('click', () => {
+    filterListings('submitted');
+    updateFilterButtons('underReview');
+  });
+  
+  filterButtons.rejected.addEventListener('click', () => {
+    filterListings('rejected');
+    updateFilterButtons('rejected');
+  });
+});
+
+// NFT Minting functionality
+async function mintNFT(listingId) {
+  const mintBtn = document.getElementById(`mintBtn${listingId}`);
+  
+  // Disable button and show loading
+  mintBtn.disabled = true;
+  mintBtn.innerHTML = 'Minting...';
+  mintBtn.className = 'flex-1 bg-gray-400 text-white py-2 px-3 rounded-lg text-sm font-medium cursor-not-allowed';
+  
+  try {
+    const response = await fetch(`/mint-nft/${listingId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Success
+      mintBtn.innerHTML = 'NFT Minted';
+      mintBtn.className = 'flex-1 bg-green-100 text-green-700 py-2 px-3 rounded-lg text-sm font-medium text-center';
+      
+      // Show success message
+      alert(`✅ NFT Minted Successfully!\nToken ID: ${result.token_id}\nTransaction: ${result.transaction_hash}`);
+      
+      // Reload page after 2 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      
+    } else {
+      // Error
+      mintBtn.disabled = false;
+      mintBtn.innerHTML = 'Mint NFT';
+      mintBtn.className = 'flex-1 bg-emerald-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors';
+      
+      alert(`❌ Minting Failed: ${result.error}`);
+    }
+    
+  } catch (error) {
+    console.error('Error minting NFT:', error);
+    
+    mintBtn.disabled = false;
+    mintBtn.innerHTML = 'Mint NFT';
+    mintBtn.className = 'flex-1 bg-emerald-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors';
+    
+    alert('❌ Network Error: Please try again later');
+  }
+}
+</script>
+
+{% endblock %}

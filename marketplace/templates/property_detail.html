@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% block title %}{{ listing.title }} - Basix{% endblock %}
+{% block content %}
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Breadcrumb -->
+  <nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+      <li class="inline-flex items-center">
+        <a href="{% url 'marketplace' %}" class="text-gray-700 hover:text-emerald-600">Marketplace</a>
+      </li>
+      <li>
+        <div class="flex items-center">
+          <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+          </svg>
+          <span class="ml-1 text-gray-500 md:ml-2">{{ listing.title|default:"Property Details" }}</span>
+        </div>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2">
+      <!-- Image Gallery -->
+      <div class="mb-8">
+        <div class="relative">
+          {% if listing.cover_image %}
+            <img src="{{ listing.cover_image.url }}" 
+                 alt="{{ listing.title }}" 
+                 class="w-full h-96 object-cover rounded-xl shadow-lg">
+          {% else %}
+            <div class="w-full h-96 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl flex items-center justify-center">
+              <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+          {% endif %}
+          
+          <!-- Status Badge -->
+          <div class="absolute top-4 right-4">
+            {% if listing.status_badge_color == 'green' %}
+              <span class="px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                {{ listing.status_badge_text }}
+              </span>
+            {% elif listing.status_badge_color == 'red' %}
+              <span class="px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                {{ listing.status_badge_text }}
+              </span>
+            {% elif listing.status_badge_color == 'yellow' %}
+              <span class="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                {{ listing.status_badge_text }}
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- AI Validation Badge -->
+          {% if listing.validation_status == 'approved' %}
+            <div class="absolute top-4 left-4">
+              <span class="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full shadow-lg flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>AI Verified</span>
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Additional Images -->
+        {% if listing_images %}
+          <div class="grid grid-cols-4 gap-4 mt-4">
+            {% for image in listing_images %}
+              <div class="aspect-square overflow-hidden rounded-lg">
+                <img src="{{ image.image.url }}" 
+                     alt="{{ listing.title }}" 
+                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                     onclick="openImageModal('{{ image.image.url }}')">
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Property Details -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Property Details</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Property Type:</span>
+                <span class="font-medium">{{ listing.property_type|default:"Not specified" }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Size:</span>
+                <span class="font-medium">{{ listing.size|default:"Not specified" }} sq ft</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Bedrooms:</span>
+                <span class="font-medium">{{ listing.bedrooms|default:"Not specified" }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Bathrooms:</span>
+                <span class="font-medium">{{ listing.bathrooms|default:"Not specified" }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Year Built:</span>
+                <span class="font-medium">{{ listing.year_built|default:"Not specified" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Location</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Address:</span>
+                <span class="font-medium text-right">{{ listing.location|default:"Not specified" }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">City:</span>
+                <span class="font-medium">{{ listing.city|default:"Not specified" }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">State:</span>
+                <span class="font-medium">{{ listing.state|default:"Not specified" }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Country:</span>
+                <span class="font-medium">{{ listing.country|default:"Not specified" }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        {% if listing.description %}
+          <div class="mt-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Description</h3>
+            <p class="text-gray-700 leading-relaxed">{{ listing.description }}</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Blockchain Information -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Blockchain Information</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">NFT Details</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Token ID:</span>
+                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                  {{ listing.token_id|default:"Not minted yet" }}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Contract Address:</span>
+                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                  {{ listing.contract_address|default:"Not deployed" }}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">IPFS Metadata:</span>
+                {% if listing.ipfs_metadata_cid %}
+                  <a href="https://ipfs.io/ipfs/{{ listing.ipfs_metadata_cid }}" 
+                     target="_blank" 
+                     class="font-mono text-sm bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200">
+                    {{ listing.ipfs_metadata_cid|truncatechars:20 }}
+                  </a>
+                {% else %}
+                  <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">Not uploaded</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Owner Information</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Owner:</span>
+                <span class="font-medium">{{ listing.owner.username }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Wallet Address:</span>
+                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                  {{ listing.owner.profile.wallet_address|default:"Not connected" }}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Listed:</span>
+                <span class="font-medium">{{ listing.created_at|date:"M d, Y" }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Section -->
+      {% if listing_documents %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">Legal Documents</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for doc in listing_documents %}
+              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  <div>
+                    <p class="font-medium text-gray-900">{{ doc.document_type|title }}</p>
+                    <p class="text-sm text-gray-500">{{ doc.uploaded_at|date:"M d, Y" }}</p>
+                  </div>
+                </div>
+                <a href="{{ doc.document.url }}" 
+                   target="_blank" 
+                   class="px-3 py-1 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
+                  View
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+      <!-- Pricing Card -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 sticky top-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Pricing Information</h3>
+        
+        <div class="space-y-4">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Current Price</p>
+            <p class="text-3xl font-bold text-emerald-600">{{ listing.display_price }}</p>
+          </div>
+
+          {% if listing.valuation_min and listing.valuation_max %}
+            <div>
+              <p class="text-sm text-gray-600 mb-1">AI Valuation Range</p>
+              <p class="text-lg font-semibold text-gray-900">
+                ${{ listing.valuation_min|floatformat:0 }} - ${{ listing.valuation_max|floatformat:0 }}
+              </p>
+              <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ listing.valuation_confidence|floatformat:0 }}%"></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Confidence: {{ listing.valuation_confidence|floatformat:0 }}%</p>
+            </div>
+          {% endif %}
+
+          <!-- Actions -->
+          <div class="space-y-3 pt-4 border-t border-gray-200">
+            {% if listing.status == 'available' and not is_owner %}
+              {% if kyc_verified %}
+                <button class="w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-emerald-700 transition-colors">
+                  Buy NFT
+                </button>
+                <button class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors">
+                  Invest Fractionally
+                </button>
+              {% else %}
+                <button onclick="alert('Please complete KYC verification to purchase this property.')" 
+                        class="w-full bg-gray-400 text-white font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
+                  Complete KYC to Buy
+                </button>
+              {% endif %}
+            {% elif is_owner %}
+              {% if listing.validation_status == 'approved' and not listing.token_id %}
+                <button onclick="mintNFT({{ listing.id }})" 
+                        id="mintBtn" 
+                        class="w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-emerald-700 transition-colors">
+                  <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    <span>Mint NFT</span>
+                  </div>
+                </button>
+                <div id="mintStatus" class="hidden text-sm text-center"></div>
+              {% elif listing.token_id %}
+                <div class="w-full bg-green-100 text-green-700 font-semibold py-3 px-4 rounded-xl text-center">
+                  <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>NFT Minted</span>
+                  </div>
+                </div>
+              {% else %}
+                <button class="w-full bg-gray-400 text-white font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
+                  Awaiting Approval
+                </button>
+              {% endif %}
+            {% else %}
+              <button class="w-full bg-gray-400 text-white font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
+                Not Available
+              </button>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Similar Properties -->
+      {% if similar_listings %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">Similar Properties</h3>
+          
+          <div class="space-y-4">
+            {% for similar in similar_listings %}
+              <div class="flex space-x-3">
+                <div class="flex-shrink-0">
+                  {% if similar.cover_image %}
+                    <img src="{{ similar.cover_image.url }}" 
+                         alt="{{ similar.title }}" 
+                         class="w-16 h-16 object-cover rounded-lg">
+                  {% else %}
+                    <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      </svg>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-sm font-medium text-gray-900 truncate">
+                    <a href="{% url 'property_detail' similar.id %}" class="hover:text-emerald-600">
+                      {{ similar.title|default:"Untitled Property" }}
+                    </a>
+                  </h4>
+                  <p class="text-sm text-gray-500">{{ similar.full_location|default:similar.location }}</p>
+                  <p class="text-sm font-semibold text-emerald-600">{{ similar.display_price }}</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 hidden z-50 overflow-y-auto">
+  <div class="absolute inset-0 bg-black bg-opacity-75"></div>
+  <div class="relative z-50 flex items-center justify-center min-h-full p-4">
+    <div class="relative max-w-4xl max-h-full">
+      <button onclick="closeImageModal()" 
+              class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300">
+        &times;
+      </button>
+      <img id="modalImage" src="" alt="" class="max-w-full max-h-full rounded-lg">
+    </div>
+  </div>
+</div>
+
+<script>
+function openImageModal(imageSrc) {
+  document.getElementById('modalImage').src = imageSrc;
+  document.getElementById('imageModal').classList.remove('hidden');
+  document.body.classList.add('overflow-hidden');
+}
+
+function closeImageModal() {
+  document.getElementById('imageModal').classList.add('hidden');
+  document.body.classList.remove('overflow-hidden');
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeImageModal();
+  }
+});
+
+// NFT Minting functionality
+async function mintNFT(listingId) {
+  const mintBtn = document.getElementById('mintBtn');
+  const mintStatus = document.getElementById('mintStatus');
+  
+  // Disable button and show loading
+  mintBtn.disabled = true;
+  mintBtn.innerHTML = `
+    <div class="flex items-center justify-center space-x-2">
+      <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>Minting...</span>
+    </div>
+  `;
+  
+  mintStatus.classList.remove('hidden');
+  mintStatus.innerHTML = '<p class="text-blue-600">Minting NFT on blockchain...</p>';
+  
+  try {
+    const response = await fetch(`/mint-nft/${listingId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Success
+      mintBtn.innerHTML = `
+        <div class="flex items-center justify-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>NFT Minted</span>
+        </div>
+      `;
+      mintBtn.className = 'w-full bg-green-100 text-green-700 font-semibold py-3 px-4 rounded-xl text-center';
+      
+      mintStatus.innerHTML = `
+        <div class="text-green-600">
+          <p class="font-semibold">✅ NFT Minted Successfully!</p>
+          <p class="text-sm">Token ID: ${result.token_id}</p>
+          <p class="text-sm">Transaction: ${result.transaction_hash}</p>
+        </div>
+      `;
+      
+      // Reload page after 3 seconds to show updated status
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+      
+    } else {
+      // Error
+      mintBtn.disabled = false;
+      mintBtn.innerHTML = `
+        <div class="flex items-center justify-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          <span>Mint NFT</span>
+        </div>
+      `;
+      mintBtn.className = 'w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-emerald-700 transition-colors';
+      
+      mintStatus.innerHTML = `
+        <div class="text-red-600">
+          <p class="font-semibold">❌ Minting Failed</p>
+          <p class="text-sm">${result.error}</p>
+        </div>
+      `;
+    }
+    
+  } catch (error) {
+    console.error('Error minting NFT:', error);
+    
+    mintBtn.disabled = false;
+    mintBtn.innerHTML = `
+      <div class="flex items-center justify-center space-x-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <span>Mint NFT</span>
+      </div>
+    `;
+    mintBtn.className = 'w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-emerald-700 transition-colors';
+    
+    mintStatus.innerHTML = `
+      <div class="text-red-600">
+        <p class="font-semibold">❌ Network Error</p>
+        <p class="text-sm">Please try again later</p>
+      </div>
+    `;
+  }
+}
+</script>
+
+{% endblock %}
