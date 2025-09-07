@@ -170,65 +170,12 @@
       </span>
     </div>
     
-    <!-- Action Buttons -->
-    <div class="pt-2 space-y-2">
-      {% if listing.status == 'available' and listing.token_id %}
-        <!-- Buy NFT Button -->
-        <a href="{% url 'property_detail' listing.id %}" 
-           class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl block text-center">
-          <div class="flex items-center justify-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"/>
-            </svg>
-            <span>Buy NFT</span>
-          </div>
-        </a>
-        
-        <!-- Fractionalisation Button (if enabled) -->
-        {% if listing.fractionalisation %}
-          <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-            <div class="flex items-center justify-center space-x-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-              </svg>
-              <span>Invest Fractionally</span>
-            </div>
-          </button>
-        {% endif %}
-        
-      {% elif listing.status == 'available' and not listing.token_id %}
-        <!-- Needs Minting (for owner's view) -->
-        <button disabled 
-                class="w-full bg-blue-300 text-blue-700 font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
-          <div class="flex items-center justify-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span>Needs Minting</span>
-          </div>
-        </button>
-        
-      {% elif listing.status == 'sold' %}
-        <button disabled 
-                class="w-full bg-gray-300 text-gray-500 font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
-          <div class="flex items-center justify-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-            <span>Sold</span>
-          </div>
-        </button>
-      {% else %}
-        <button disabled 
-                class="w-full bg-gray-300 text-gray-500 font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
-          <div class="flex items-center justify-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span>Coming Soon</span>
-          </div>
-        </button>
-      {% endif %}
+    <!-- Action Button: Always View Details -->
+    <div class="pt-2">
+      <a href="{% url 'property_detail' listing.id %}"
+         class="w-full bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-3 px-4 rounded-xl font-semibold shadow-sm hover:from-emerald-800 hover:to-emerald-900 hover:shadow-md active:scale-95 transition-all block text-center">
+        View Details
+      </a>
     </div>
   </div>
 </div>

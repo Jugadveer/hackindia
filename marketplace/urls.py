@@ -13,6 +13,8 @@ urlpatterns = [
     path("signup/", views.signup_view, name="signup"),
     path('save_listing_step/<int:step>/', views.save_listing_step, name='save_listing_step'),
     path('submit_listing/', views.submit_listing, name='submit_listing'),
+    path('buy-nft/<int:listing_id>/', views.buy_nft, name='buy_nft'),
+    path('buy-fractional/<int:listing_id>/', views.buy_fractional, name='buy_fractional'),
     
     # 🤖 Agent Integration URLs
     path('agent/validate/<int:listing_id>/', views.validate_listing_agent, name='validate_listing_agent'),

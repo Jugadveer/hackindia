@@ -1122,7 +1122,17 @@ document.getElementById('listingForm').addEventListener('submit', async function
   e.preventDefault();
   if (currentStep !== totalSteps) return;
 
-  showLoader();
+  // Instead of a blocking loader, show a quick toast and proceed
+  function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    const color = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-emerald-600');
+    toast.className = `fixed top-4 right-4 ${color} text-white px-4 py-2 rounded-lg shadow-lg z-[12000]`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  showToast('Submitting your property…');
 
   const formData = new FormData(this);
   if (listingId) formData.append('listing_id', listingId);
@@ -1135,12 +1145,11 @@ document.getElementById('listingForm').addEventListener('submit', async function
     });
     const data = await res.json();
 
-    hideLoader();
-
     if (data.success) {
-      alert('Listing submitted successfully! Metadata CID: ' + data.metadata_cid);
+      showToast('Your property is under review', 'success');
       closeAddListingModal();
-      window.location.reload();
+      // Soft refresh to show it under "My Listings" with Under Review
+      setTimeout(() => window.location.reload(), 1200);
     } else {
       // Handle validation errors by showing them on the appropriate form step
       if (data.validation_errors) {
@@ -1150,9 +1159,8 @@ document.getElementById('listingForm').addEventListener('submit', async function
       }
     }
   } catch (err) {
-    hideLoader();
     console.error(err);
-    alert('An unexpected error occurred. Check console.');
+    showToast('Failed to submit listing', 'error');
   }
 });
 

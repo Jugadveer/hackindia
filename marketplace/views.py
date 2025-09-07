@@ -8,10 +8,11 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 import requests, hashlib, hmac
 from django.http import JsonResponse
+import threading
 from django.conf import settings
 from django.utils import timezone
 from django.db import models
-from .models import Listing, Profile
+from .models import Listing, Profile, Transaction, FractionalHolding
 from .utils.ipfs import handle_property_upload
 from .utils.sumsub_client import sumsub_client
 
@@ -184,49 +185,55 @@ def submit_listing(request):
             # 🔗 Upload files + metadata to IPFS
             metadata_cid = handle_property_upload(request.FILES, request.POST)
 
-            # Save CID and update listing status based on validation
+            # Save CID and set listing to under review; do NOT auto-approve synchronously
             listing.ipfs_metadata_cid = metadata_cid.replace('ipfs://', '')  # Store just the CID, not the full URI
-            
-            # Always start as "submitted" for review, then auto-approve if validation passes
             listing.status = 'submitted'
             listing.validation_status = 'pending'
             listing.save()
-            
-            # Run validation in background (simulate async processing)
-            if validation_result and validation_result.get('status') == 'APPROVED':
-                # Auto-approve if validation passed
-                listing.status = 'available'
-                listing.validation_status = 'approved'
-                listing.validation_confidence = validation_result.get('confidence', 0.8)
-                
-                # Auto-mint NFT if user has wallet address
-                try:
-                    profile = request.user.profile
-                    if profile.wallet_address:
-                        from .utils.web3_client import web3_client
-                        token_uri = f"ipfs://{listing.ipfs_metadata_cid}"
-                        
-                        mint_result = web3_client.mint_property(
-                            to_address=profile.wallet_address,
-                            token_uri=token_uri
-                        )
-                        
-                        if mint_result['success']:
-                            listing.token_id = str(mint_result['token_id'])
-                            listing.contract_address = mint_result['contract_address']
-                            logger.info(f"Auto-minted NFT for listing {listing.id}: {mint_result}")
-                        else:
-                            logger.warning(f"Auto-minting failed for listing {listing.id}: {mint_result.get('error')}")
-                except Exception as e:
-                    logger.error(f"Auto-minting error for listing {listing.id}: {e}")
-                
-                listing.save()
 
+            # Kick off background validation + optional auto-minting
+            def _background_validate_and_maybe_mint(listing_id: int, user_id: int):
+                try:
+                    lst = Listing.objects.get(id=listing_id)
+                    usr = User.objects.get(id=user_id)
+                    if settings.AGENT_SETTINGS.get('VALIDATION_ENABLED', True) and not settings.AGENT_SETTINGS.get('BYPASS_VALIDATION', False):
+                        from agents.clients import agent_client
+                        validation_result = agent_client.validate_listing(lst, usr)
+                        if validation_result.get('status') == 'APPROVED':
+                            lst.status = 'available'
+                            lst.validation_status = 'approved'
+                            lst.validation_confidence = validation_result.get('confidence', 0.8)
+                            # Auto-mint if wallet available
+                            try:
+                                profile = usr.profile
+                                if profile.wallet_address and lst.ipfs_metadata_cid:
+                                    from .utils.web3_client import web3_client
+                                    token_uri = f"ipfs://{lst.ipfs_metadata_cid}"
+                                    mint_result = web3_client.mint_property(
+                                        to_address=profile.wallet_address,
+                                        token_uri=token_uri
+                                    )
+                                    if mint_result.get('success'):
+                                        lst.token_id = str(mint_result.get('token_id'))
+                                        lst.contract_address = mint_result.get('contract_address')
+                            except Exception as e:
+                                logger.error(f"Background auto-minting error for listing {lst.id}: {e}")
+                            lst.save()
+                        else:
+                            lst.validation_status = 'rejected'
+                            lst.status = 'rejected'
+                            lst.save()
+                except Exception as e:
+                    logger.error(f"Background validation error: {e}")
+
+            threading.Thread(target=_background_validate_and_maybe_mint, args=(listing.id, request.user.id), daemon=True).start()
+
+            # Respond immediately with under-review status for better UX
             return JsonResponse({
-                'success': True, 
+                'success': True,
                 'metadata_cid': metadata_cid,
-                'validation_result': validation_result,
-                'status': listing.status
+                'status': 'submitted',
+                'message': 'Your property is under review.'
             })
         except Exception as e:
             logger.error(f"Error submitting listing: {e}")
@@ -539,17 +546,23 @@ def marketplace(request):
         except Exception as e:
             logger.error(f"Failed to get recommendations: {e}")
     
-    # Apply agent valuations to listings
+    # Apply agent valuations to listings (map service -> model fields)
     for listing in listings:
         if listing.status == 'available' and not listing.valuation_min:
             try:
                 from agents.clients import agent_client
                 valuation_result = agent_client.calculate_valuation(listing)
-                if valuation_result.get('success'):
-                    listing.valuation_min = valuation_result.get('min_value')
-                    listing.valuation_max = valuation_result.get('max_value')
-                    listing.valuation_confidence = valuation_result.get('confidence', 0.0)
-                    listing.save()
+                # Support both interface success wrapper and direct payloads
+                if valuation_result:
+                    valuation_range = valuation_result.get('valuation_range') or {}
+                    min_val = valuation_range.get('min')
+                    max_val = valuation_range.get('max')
+                    confidence = valuation_result.get('confidence_score', 0.0)
+                    if min_val and max_val:
+                        listing.valuation_min = min_val
+                        listing.valuation_max = max_val
+                        listing.valuation_confidence = confidence
+                        listing.save()
             except Exception as e:
                 logger.error(f"Failed to get valuation for listing {listing.id}: {e}")
     
@@ -767,6 +780,123 @@ def submit_kyc(request):
             })
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+def buy_nft(request, listing_id):
+    """Buy full NFT: KYC + wallet checks, mint/transfer, log tx"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required'})
+    try:
+        profile = request.user.profile
+        if not (profile.kyc_verified or profile.kyc_status in ['auto_approved', 'approved']):
+            return JsonResponse({'success': False, 'require_kyc': True, 'error': 'KYC required'})
+        if not profile.wallet_address:
+            return JsonResponse({'success': False, 'require_wallet': True, 'error': 'Wallet not connected'})
+    except Profile.DoesNotExist:
+        return JsonResponse({'success': False, 'require_kyc': True, 'error': 'KYC required'})
+
+    try:
+        listing = Listing.objects.get(id=listing_id)
+        seller = listing.owner
+        token_uri = f"ipfs://{listing.ipfs_metadata_cid}" if listing.ipfs_metadata_cid else None
+
+        from .utils.web3_client import web3_client
+        # If not minted, mint to seller first; then transfer (mocked as a single call here)
+        result = web3_client.mint_property(
+            to_address=profile.wallet_address,
+            token_uri=token_uri or 'ipfs://'
+        )
+        if not result.get('success'):
+            return JsonResponse({'success': False, 'error': result.get('error', 'Blockchain transaction failed')})
+
+        # Update listing
+        listing.token_id = str(result.get('token_id'))
+        listing.contract_address = result.get('contract_address')
+        listing.status = 'sold'
+        listing.save()
+
+        # Log transaction
+        Transaction.objects.create(
+            listing=listing,
+            buyer=request.user,
+            seller=seller,
+            token_type='ERC721',
+            amount_paid=listing.price or 0,
+            transaction_hash=result.get('transaction_hash')
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Congratulations! You now own this property NFT.',
+            'transaction_hash': result.get('transaction_hash'),
+            'token_id': result.get('token_id'),
+        })
+    except Exception as e:
+        logger.error(f"Buy NFT failed: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+def buy_fractional(request, listing_id):
+    """Buy fractional shares (mock ERC1155). Expects JSON {shares} """
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required'})
+    try:
+        profile = request.user.profile
+        if not (profile.kyc_verified or profile.kyc_status in ['auto_approved', 'approved']):
+            return JsonResponse({'success': False, 'require_kyc': True, 'error': 'KYC required'})
+        if not profile.wallet_address:
+            return JsonResponse({'success': False, 'require_wallet': True, 'error': 'Wallet not connected'})
+    except Profile.DoesNotExist:
+        return JsonResponse({'success': False, 'require_kyc': True, 'error': 'KYC required'})
+
+    try:
+        import json
+        data = json.loads(request.body or '{}')
+        shares = int(data.get('shares', 0))
+        if shares <= 0:
+            return JsonResponse({'success': False, 'error': 'Invalid share quantity'})
+
+        listing = Listing.objects.get(id=listing_id)
+        if not listing.fractionalisation:
+            return JsonResponse({'success': False, 'error': 'Fractionalization not enabled for this listing'})
+
+        remaining = listing.fraction_shares_remaining
+        if shares > remaining:
+            return JsonResponse({'success': False, 'error': f'Only {remaining} shares remaining'})
+
+        # Price per share (simple: listing.price / total)
+        total_price = 0
+        try:
+            if listing.price and listing.fraction_shares_total:
+                total_price = float(listing.price) * shares / float(listing.fraction_shares_total)
+        except Exception:
+            total_price = 0
+
+        from .utils.web3_client import web3_client
+        # Mock fractional transfer using same mint call to keep demo simple
+        result = web3_client.mint_property(
+            to_address=profile.wallet_address,
+            token_uri=f"ipfs://{listing.ipfs_metadata_cid}#fractional"
+        )
+        if not result.get('success'):
+            return JsonResponse({'success': False, 'error': result.get('error', 'Blockchain transaction failed')})
+
+        FractionalHolding.objects.create(
+            listing=listing,
+            user=request.user,
+            shares=shares,
+            amount_paid=total_price,
+            transaction_hash=result.get('transaction_hash')
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Purchased {shares} shares successfully.',
+            'transaction_hash': result.get('transaction_hash'),
+            'shares': shares,
+            'remaining': listing.fraction_shares_remaining
+        })
+    except Exception as e:
+        logger.error(f"Buy fractional failed: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 def check_kyc_status(request):

@@ -79,6 +79,7 @@ class Listing(models.Model):
     valuation_min = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     valuation_max = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     fractionalisation = models.BooleanField(default=False)
+    fraction_shares_total = models.PositiveIntegerField(default=1000)
     let_agent_suggest = models.BooleanField(default=False)
 
     # Blockchain & NFT
@@ -168,6 +169,18 @@ class Listing(models.Model):
         parts = [self.city, self.state, self.country]
         return ', '.join(filter(None, parts))
 
+    @property
+    def fraction_shares_sold(self):
+        try:
+            total = sum(h.shares for h in self.fractionalholdings.all())
+        except Exception:
+            total = 0
+        return total
+
+    @property
+    def fraction_shares_remaining(self):
+        return max(0, (self.fraction_shares_total or 0) - self.fraction_shares_sold)
+
 
 class ListingImage(models.Model):
     listing = models.ForeignKey('Listing', on_delete=models.CASCADE, related_name='images')
@@ -177,3 +190,26 @@ class ListingImage(models.Model):
 class ListingDocument(models.Model):
     listing = models.ForeignKey('Listing', on_delete=models.CASCADE, related_name='documents')
     document = models.FileField(upload_to='listing_docs/')
+
+
+class Transaction(models.Model):
+    TOKEN_TYPE_CHOICES = [
+        ('ERC721', 'Full NFT'),
+        ('ERC1155', 'Fractional'),
+    ]
+    listing = models.ForeignKey('Listing', on_delete=models.CASCADE, related_name='transactions')
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchases')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales')
+    token_type = models.CharField(max_length=10, choices=TOKEN_TYPE_CHOICES)
+    amount_paid = models.DecimalField(max_digits=18, decimal_places=2)
+    transaction_hash = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class FractionalHolding(models.Model):
+    listing = models.ForeignKey('Listing', on_delete=models.CASCADE, related_name='fractionalholdings')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fractional_holdings')
+    shares = models.PositiveIntegerField(default=0)
+    amount_paid = models.DecimalField(max_digits=18, decimal_places=2)
+    transaction_hash = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -151,7 +151,7 @@ KYC_AUTO_APPROVAL_CONFIDENCE_THRESHOLD = 0.8  # Minimum confidence score for aut
 KYC_MANUAL_REVIEW_FALLBACK = True  # Send to manual review if auto-approval fails
 
 # Smart Contract settings
-SMART_CONTRACT_ADDRESS = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"
+SMART_CONTRACT_ADDRESS = "0xdFD2046C739e9F563bedc2Bf0e0275A0D0c385f0"
 SMART_CONTRACT_ABI = [
     {
         "inputs": [],
