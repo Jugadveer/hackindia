@@ -283,8 +283,22 @@ def dashboard(request):
     else:
         logger.info("Direct check - user123 does not exist")
     
-    # Get user's listings
-    user_listings = Listing.objects.filter(owner=request.user).order_by('-created_at')
+    # Get user's listings - exclude incomplete/draft listings
+    user_listings = Listing.objects.filter(
+        owner=request.user
+    ).exclude(
+        title__isnull=True
+    ).exclude(
+        title__exact=''
+    ).exclude(
+        description__isnull=True
+    ).exclude(
+        description__exact=''
+    ).exclude(
+        price__isnull=True
+    ).exclude(
+        price__lte=0
+    ).order_by('-created_at')
     
     # Debug: Check all listings for this user
     all_user_listings = Listing.objects.filter(owner=request.user)
