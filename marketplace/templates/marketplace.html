@@ -227,6 +227,10 @@
   {% endif %}
 </section>
 
+
+
+
+
   <!-- Add Listing Modal -->
 <div id="addListingModal" class="fixed inset-0 hidden z-[9999] overflow-y-auto">
   <!-- Backdrop -->
@@ -251,107 +255,383 @@
       <form id="listingForm" class="space-y-4" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Step 1: Media -->
-        <div class="step" id="step1">
-          <label class="block text-gray-700 mb-1">Property Images *</label>
-          <input type="file" name="images" multiple required accept="image/*"
-                 class="w-full border rounded-lg px-3 py-2">
-          <p class="text-sm text-gray-500 mt-1">Upload multiple images (JPG, PNG, GIF only)</p>
+        <!-- ===== Step 1: Media (Enhanced) ===== -->
+<div class="step" id="step1">
+  <!-- Images -->
+  <label class="block text-gray-700 mb-2 font-medium">Property Images *</label>
 
-          <label class="block text-gray-700 mb-1 mt-4">Property Video (optional)</label>
-          <input type="file" name="video" accept="video/*"
-                 class="w-full border rounded-lg px-3 py-2">
-          <p class="text-sm text-gray-500 mt-1">Upload video file (MP4, MOV, AVI)</p>
+  <!-- Dropzone -->
+  <div id="imagesDropzone"
+       class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-emerald-400 transition-colors cursor-pointer bg-white"
+       aria-describedby="imagesHelp" tabindex="0">
+    <!-- real input (hidden) -->
+    <input id="imagesInput" type="file" name="images" accept="image/*" multiple class="hidden" />
+
+    <div class="flex flex-col items-center justify-center gap-3">
+      <div class="w-12 h-12 flex items-center justify-center rounded-full bg-emerald-50">
+        <!-- upload icon -->
+        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 3v12" />
+        </svg>
+      </div>
+
+      <div>
+        <p class="text-lg font-medium text-gray-900">Upload Property Images</p>
+        <p class="text-sm text-gray-500 mt-1">Drag & drop images here, or <button type="button" id="imagesBrowseBtn" class="text-emerald-600 hover:underline font-medium">click to browse</button></p>
+        <p class="text-xs text-gray-400 mt-2">JPG, PNG, GIF — up to <span id="imgMaxCountLabel">12</span> files • max <span id="imgMaxSizeLabel">10MB</span> each</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inline errors -->
+  <div id="imageErrors" class="mt-3 text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
+
+  <!-- Thumbnails -->
+  <div id="imagePreviewGrid" class="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+
+  <!-- Small helper -->
+  <p class="text-sm text-gray-500 mt-2">Tip: Hold Ctrl / Cmd to select multiple files from your file chooser.</p>
+
+  <!-- Divider -->
+  <div class="mt-6 border-t"></div>
+
+  <!-- Video -->
+  <label class="block text-gray-700 mb-2 mt-6 font-medium">Property Video (optional)</label>
+
+  <div id="videoDropzone"
+       class="relative border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-emerald-400 transition-colors cursor-pointer bg-white"
+       aria-describedby="videoHelp" tabindex="0">
+    <input id="videoInput" type="file" name="video" accept="video/*" class="hidden" />
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-50">
+        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.868v4.264a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+
+      <div>
+        <p class="text-md font-medium text-gray-900">Upload Property Video</p>
+        <p class="text-sm text-gray-500 mt-1">MP4, MOV, AVI — max <span id="videoMaxSizeLabel">50MB</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="videoError" class="mt-3 text-sm text-red-600 hidden" role="alert" aria-live="polite"></div>
+
+  <!-- Video preview -->
+  <div id="videoPreviewWrap" class="mt-4 hidden">
+    <div class="bg-gray-50 rounded-lg p-3 flex items-start gap-3">
+      <video id="videoPreview" class="w-full max-h-48 rounded-md" controls></video>
+      <div class="flex flex-col items-end gap-2">
+        <div class="text-sm text-gray-900 font-medium" id="videoFileName"></div>
+        <div class="text-xs text-gray-500" id="videoFileSize"></div>
+        <button type="button" id="removeVideoBtn" class="mt-2 px-3 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100">Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== end enhanced Step 1 ===== -->
+
+
+
+
+<!-- ===== Step 2: Property Details (Polished) ===== -->
+<div class="step hidden" id="step2">
+  <h3 class="text-xl font-semibold text-gray-800 mb-6">🏡 Property Details</h3>
+
+  <!-- Title -->
+  <div class="mb-5">
+    <label class="block text-gray-700 font-medium mb-1">Title *</label>
+    <div class="relative">
+      <input type="text" name="title" required
+             placeholder="Spacious 3BHK Apartment in Downtown"
+             class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+      <span class="absolute left-3 top-2.5 text-gray-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2 12l9 9 11-11-9-9-11 11z" />
+        </svg>
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 mt-1">Catchy headline to grab attention.</p>
+  </div>
+
+  <!-- Description -->
+  <div class="mb-5">
+    <label class="block text-gray-700 font-medium mb-1">Description *</label>
+    <textarea name="description" rows="4" required
+              placeholder="Describe the property features, amenities, nearby landmarks..."
+              class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400"></textarea>
+    <p class="text-xs text-gray-500 mt-1">Highlight special features like balconies, views, or facilities.</p>
+  </div>
+
+  <!-- Location -->
+  <div class="mb-5">
+    <label class="block text-gray-700 font-medium mb-1">Location *</label>
+    <div class="relative">
+      <input type="text" name="location" required
+             placeholder="MG Road, Bangalore"
+             class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+      <span class="absolute left-3 top-2.5 text-gray-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 21c-4.418-4.418-7-7.686-7-11a7 7 0 1114 0c0 3.314-2.582 6.582-7 11z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 mt-1">Enter address or nearest landmark.</p>
+  </div>
+
+
+
+  <!-- City -->
+<div class="mb-5">
+  <label class="block text-gray-700 font-medium mb-1">City *</label>
+  <div class="relative">
+    <input type="text" name="city" required
+           placeholder="Bangalore"
+           class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+    <span class="absolute left-3 top-2.5 text-gray-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 12c2.28 0 4-1.72 4-4s-1.72-4-4-4-4 1.72-4 4 1.72 4 4 4z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2 20c0-4 4-7 10-7s10 3 10 7" />
+      </svg>
+    </span>
+  </div>
+</div>
+
+<!-- State -->
+<div class="mb-5">
+  <label class="block text-gray-700 font-medium mb-1">State *</label>
+  <div class="relative">
+    <input type="text" name="state" required
+           placeholder="Karnataka"
+           class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+    <span class="absolute left-3 top-2.5 text-gray-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18" />
+      </svg>
+    </span>
+  </div>
+</div>
+
+<!-- Country -->
+<div class="mb-5">
+  <label class="block text-gray-700 font-medium mb-1">Country *</label>
+  <div class="relative">
+    <input type="text" name="country" required
+           placeholder="India"
+           value="India"
+           class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+    <span class="absolute left-3 top-2.5 text-gray-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+      </svg>
+    </span>
+  </div>
+</div>
+
+
+
+
+  <!-- Property Type -->
+  <div class="mb-5">
+    <label class="block text-gray-700 font-medium mb-1">Property Type *</label>
+    <select name="property_type" required
+            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 bg-white">
+      <option value="">Select Type</option>
+      <option value="residential">Residential</option>
+      <option value="apartment">Apartment</option>
+      <option value="commercial">Commercial</option>
+      <option value="land">Land</option>
+      <option value="industrial">Industrial</option>
+    </select>
+  </div>
+
+  <!-- Size + Bedrooms + Bathrooms -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+    <div>
+      <label class="block text-gray-700 font-medium mb-1">Size (sq.ft)</label>
+      <div class="relative">
+        <input type="number" step="0.01" name="size"
+               placeholder="1200"
+               class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+        <span class="absolute left-3 top-2.5 text-gray-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18" />
+          </svg>
+        </span>
+      </div>
+    </div>
+    <div>
+      <label class="block text-gray-700 font-medium mb-1">Bedrooms</label>
+      <input type="number" name="bedrooms"
+             placeholder="3"
+             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+    </div>
+    <div>
+      <label class="block text-gray-700 font-medium mb-1">Bathrooms</label>
+      <input type="number" name="bathrooms"
+             placeholder="2"
+             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+    </div>
+  </div>
+
+  <!-- Year Built + Ownership Type -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+    <div>
+      <label class="block text-gray-700 font-medium mb-1">Year Built</label>
+      <div class="relative">
+        <input type="number" name="year_built"
+               placeholder="2015"
+               class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+        <span class="absolute left-3 top-2.5 text-gray-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </span>
+      </div>
+    </div>
+    <div>
+      <label class="block text-gray-700 font-medium mb-1">Ownership Type</label>
+      <input type="text" name="ownership_type"
+             placeholder="Freehold / Leasehold"
+             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+    </div>
+  </div>
+</div>
+<!-- ===== end enhanced Step 2 ===== -->
+
+
+
+
+
+
+<!-- ===== Step 3: Compliance (Polished) ===== -->
+<div class="step hidden" id="step3">
+  <h3 class="text-xl font-semibold text-gray-800 mb-6">📑 Compliance Documents</h3>
+  <p class="text-sm text-gray-500 mb-6">
+    Please upload the required compliance documents. Supported formats: <strong>PDF, JPG, PNG</strong>.
+  </p>
+
+  <div class="space-y-6">
+
+    <!-- Title Deed -->
+    <div class="border-2 border-dashed rounded-xl p-4 hover:border-emerald-400 transition bg-gray-50">
+      <label class="block font-medium text-gray-700 mb-2">Title Deed *</label>
+      <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0 text-emerald-500">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 0a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v4a2 2 0 002 2zm0 0v4a2 2 0 002 2h2a2 2 0 002-2v-4" />
+          </svg>
         </div>
+        <input type="file" name="title_deed" required accept=".pdf,.jpg,.jpeg,.png"
+               class="flex-1 border rounded-lg px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-white file:text-sm file:cursor-pointer hover:file:bg-emerald-600" />
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Upload property title deed (PDF, JPG, PNG)</p>
+    </div>
 
-        <!-- Step 2: Property Details -->
-        <div class="step hidden" id="step2">
-          <label class="block text-gray-700 mb-1">Title *</label>
-          <input type="text" name="title" required class="w-full border rounded-lg px-3 py-2">
-
-          <label class="block text-gray-700 mb-1 mt-2">Description *</label>
-          <textarea name="description" rows="3" required class="w-full border rounded-lg px-3 py-2"></textarea>
-
-          <label class="block text-gray-700 mb-1 mt-2">Location *</label>
-          <input type="text" name="location" required class="w-full border rounded-lg px-3 py-2">
-
-          <label class="block text-gray-700 mb-1 mt-2">Property Type *</label>
-          <select name="property_type" required class="w-full border rounded-lg px-3 py-2">
-            <option value="">Select Type</option>
-            <option>Apartment</option>
-            <option>Villa</option>
-            <option>Commercial</option>
-            <option>Land</option>
-          </select>
-
-          <label class="block text-gray-700 mb-1 mt-2">Size (sq.ft)</label>
-          <input type="number" step="0.01" name="size" class="w-full border rounded-lg px-3 py-2">
-
-          <label class="block text-gray-700 mb-1 mt-2">Bedrooms</label>
-          <input type="number" name="bedrooms" class="w-full border rounded-lg px-3 py-2">
-
-          <label class="block text-gray-700 mb-1 mt-2">Year Built</label>
-          <input type="number" name="year_built" class="w-full border rounded-lg px-3 py-2">
-
-          <label class="block text-gray-700 mb-1 mt-2">Ownership Type</label>
-          <input type="text" name="ownership_type" class="w-full border rounded-lg px-3 py-2">
+    <!-- Tax Certificate -->
+    <div class="border-2 border-dashed rounded-xl p-4 hover:border-emerald-400 transition bg-gray-50">
+      <label class="block font-medium text-gray-700 mb-2">Tax Certificate *</label>
+      <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0 text-emerald-500">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18" />
+          </svg>
         </div>
+        <input type="file" name="tax_certificate" required accept=".pdf,.jpg,.jpeg,.png"
+               class="flex-1 border rounded-lg px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-white file:text-sm file:cursor-pointer hover:file:bg-emerald-600" />
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Upload latest tax certificate (PDF, JPG, PNG)</p>
+    </div>
 
-        <!-- Step 3: Compliance -->
-        <div class="step hidden" id="step3">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 mb-1">Title Deed *</label>
-              <input type="file" name="title_deed" required accept=".pdf,.jpg,.jpeg,.png" 
-                     class="w-full border rounded-lg px-3 py-2">
-              <p class="text-sm text-gray-500 mt-1">Upload property title deed (PDF, JPG, PNG)</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1">Tax Certificate *</label>
-              <input type="file" name="tax_certificate" required accept=".pdf,.jpg,.jpeg,.png" 
-                     class="w-full border rounded-lg px-3 py-2">
-              <p class="text-sm text-gray-500 mt-1">Upload tax certificate (PDF, JPG, PNG)</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1">Utility Bills *</label>
-              <input type="file" name="utility_bills" required accept=".pdf,.jpg,.jpeg,.png" 
-                     class="w-full border rounded-lg px-3 py-2">
-              <p class="text-sm text-gray-500 mt-1">Upload utility bills (PDF, JPG, PNG)</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1">KYC / Identity Document *</label>
-              <input type="file" name="kyc_doc" required accept=".pdf,.jpg,.jpeg,.png" 
-                     class="w-full border rounded-lg px-3 py-2">
-              <p class="text-sm text-gray-500 mt-1">Upload identity document (PDF, JPG, PNG)</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1">Other Legal Documents (optional)</label>
-              <input type="file" name="other_docs" multiple accept=".pdf,.jpg,.jpeg,.png" 
-                     class="w-full border rounded-lg px-3 py-2">
-              <p class="text-sm text-gray-500 mt-1">Upload additional legal documents (PDF, JPG, PNG)</p>
-            </div>
-          </div>
+    <!-- Utility Bills -->
+    <div class="border-2 border-dashed rounded-xl p-4 hover:border-emerald-400 transition bg-gray-50">
+      <label class="block font-medium text-gray-700 mb-2">Utility Bills *</label>
+      <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0 text-emerald-500">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-7a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
+        <input type="file" name="utility_bills" required accept=".pdf,.jpg,.jpeg,.png"
+               class="flex-1 border rounded-lg px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-white file:text-sm file:cursor-pointer hover:file:bg-emerald-600" />
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Upload recent utility bills (PDF, JPG, PNG)</p>
+    </div>
 
-        <!-- Step 4: Pricing -->
-        <div class="step hidden" id="step4">
-          <label class="block text-gray-700 mb-1">Asking Price (₹)</label>
-          <input type="number" step="0.01" name="price" class="w-full border rounded-lg px-3 py-2">
-
-          <label class="flex items-center mt-3">
-            <input type="checkbox" name="fractionalisation" value="true" class="mr-2">
-            Fractionalisation Option
-          </label>
-
-          <label class="flex items-center mt-3">
-            <input type="checkbox" name="let_agent_suggest" value="true" class="mr-2">
-            Let Valuation Agent Suggest Price
-          </label>
+    <!-- KYC Document -->
+    <div class="border-2 border-dashed rounded-xl p-4 hover:border-emerald-400 transition bg-gray-50">
+      <label class="block font-medium text-gray-700 mb-2">KYC / Identity Document *</label>
+      <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0 text-emerald-500">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 7v-7" />
+          </svg>
         </div>
+        <input type="file" name="kyc_doc" required accept=".pdf,.jpg,.jpeg,.png"
+               class="flex-1 border rounded-lg px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-white file:text-sm file:cursor-pointer hover:file:bg-emerald-600" />
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Upload government-issued ID (PDF, JPG, PNG)</p>
+    </div>
+
+
+  </div>
+</div>
+<!-- ===== end enhanced Step 3 ===== -->
+
+
+
+
+
+
+
+<!-- ===== Step 4: Pricing (Enhanced) ===== -->
+<div class="step hidden" id="step4">
+  <h3 class="text-xl font-semibold text-gray-800 mb-6">💰 Pricing & Options</h3>
+
+  <!-- Asking Price -->
+  <div class="mb-5">
+    <label class="block text-gray-700 font-medium mb-1">Asking Price ($) *</label>
+    <div class="relative">
+      <input type="number" step="0.01" name="price" required
+             placeholder="Enter your asking price"
+             class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400" />
+      <span class="absolute left-3 top-2.5 text-gray-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-3.314 0-6 1.343-6 3s2.686 3 6 3 6-1.343 6-3-2.686-3-6-3zM12 8v8m0 0c-3.314 0-6-1.343-6-3m6 3c3.314 0 6-1.343 6-3" />
+        </svg>
+      </span>
+    </div>
+    <p class="text-xs text-gray-500 mt-1">Set the price for your property listing. You can let an agent suggest a price below.</p>
+  </div>
+
+  <!-- Fractionalisation Option -->
+  <div class="mb-3">
+    <label class="flex items-center space-x-3 cursor-pointer">
+      <input type="checkbox" name="fractionalisation" value="true"
+             class="w-5 h-5 text-emerald-500 border-gray-300 rounded focus:ring-2 focus:ring-emerald-400">
+      <span class="text-gray-700 font-medium">Enable Fractionalisation</span>
+    </label>
+    <p class="text-xs text-gray-500 ml-7 mt-1">Allow partial ownership of this property.</p>
+  </div>
+
+  <!-- Let Agent Suggest Price -->
+  <div class="mb-3">
+    <label class="flex items-center space-x-3 cursor-pointer">
+      <input type="checkbox" name="let_agent_suggest" value="true"
+             class="w-5 h-5 text-emerald-500 border-gray-300 rounded focus:ring-2 focus:ring-emerald-400">
+      <span class="text-gray-700 font-medium">Let Valuation Agent Suggest Price</span>
+    </label>
+    <p class="text-xs text-gray-500 ml-7 mt-1">If checked, a professional agent can recommend a price for you.</p>
+  </div>
+</div>
+<!-- ===== end enhanced Step 4 ===== -->
+
+
+
+
 
         <!-- Step 5: Wallet Connection -->
         <div class="step hidden" id="step5">
@@ -436,6 +716,283 @@
     </div>
   </div>
 </div>
+<script>
+(function () {
+  // Config
+  const IMG_MAX_FILES = 12;
+  const IMG_MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+  const VIDEO_MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+  const acceptedImageTypes = ['image/jpeg','image/png','image/gif','image/webp','image/jpg'];
+
+  // Elements
+  const imagesDropzone = document.getElementById('imagesDropzone');
+  const imagesInput = document.getElementById('imagesInput');
+  const imagesBrowseBtn = document.getElementById('imagesBrowseBtn');
+  const imageErrors = document.getElementById('imageErrors');
+  const imagePreviewGrid = document.getElementById('imagePreviewGrid');
+  const imgMaxCountLabel = document.getElementById('imgMaxCountLabel');
+  const imgMaxSizeLabel = document.getElementById('imgMaxSizeLabel');
+
+  const videoDropzone = document.getElementById('videoDropzone');
+  const videoInput = document.getElementById('videoInput');
+  const videoPreviewWrap = document.getElementById('videoPreviewWrap');
+  const videoPreview = document.getElementById('videoPreview');
+  const videoFileName = document.getElementById('videoFileName');
+  const videoFileSize = document.getElementById('videoFileSize');
+  const removeVideoBtn = document.getElementById('removeVideoBtn');
+  const videoError = document.getElementById('videoError');
+  const videoMaxSizeLabel = document.getElementById('videoMaxSizeLabel');
+
+  // State
+  let imageFiles = []; // array of File objects
+  let videoFile = null;
+  let objectUrls = []; // track previews to revoke
+
+  // Initialize labels
+  imgMaxCountLabel.textContent = IMG_MAX_FILES;
+  imgMaxSizeLabel.textContent = (IMG_MAX_BYTES / (1024 * 1024)) + 'MB';
+  videoMaxSizeLabel.textContent = (VIDEO_MAX_BYTES / (1024 * 1024)) + 'MB';
+
+  // Helper to show errors
+  function showImageError(msg) {
+    imageErrors.textContent = msg;
+    imageErrors.classList.remove('hidden');
+    setTimeout(() => {
+      imageErrors.classList.add('hidden');
+    }, 6000);
+  }
+  function showVideoError(msg) {
+    videoError.textContent = msg;
+    videoError.classList.remove('hidden');
+    setTimeout(() => {
+      videoError.classList.add('hidden');
+    }, 6000);
+  }
+
+  // Update hidden input.files using DataTransfer (so form submits real files)
+  function updateImagesInputFiles() {
+    const dt = new DataTransfer();
+    imageFiles.forEach(f => dt.items.add(f));
+    imagesInput.files = dt.files;
+  }
+
+  function updateVideoInputFile() {
+    const dt = new DataTransfer();
+    if (videoFile) dt.items.add(videoFile);
+    videoInput.files = dt.files;
+  }
+
+  // Render thumbnails
+  function renderImagePreviews() {
+    // clear existing
+    imagePreviewGrid.innerHTML = '';
+    objectUrls.forEach(u => URL.revokeObjectURL(u));
+    objectUrls = [];
+
+    imageFiles.forEach((file, idx) => {
+      const url = URL.createObjectURL(file);
+      objectUrls.push(url);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'relative rounded-md overflow-hidden border bg-white';
+
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = file.name;
+      img.className = 'object-cover w-full h-28';
+
+      const info = document.createElement('div');
+      info.className = 'p-2 text-xs text-gray-700';
+      info.innerHTML = `<div class="truncate font-medium">${escapeHtml(file.name)}</div><div class="text-gray-400">${(file.size/1024|0)} KB</div>`;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'absolute top-2 right-2 bg-white/80 rounded-full p-1 shadow hover:bg-white';
+      removeBtn.innerHTML = `
+        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>`;
+      removeBtn.addEventListener('click', () => {
+        removeImageAtIndex(idx);
+      });
+
+      wrap.appendChild(img);
+      wrap.appendChild(removeBtn);
+      wrap.appendChild(info);
+      imagePreviewGrid.appendChild(wrap);
+    });
+
+    // Update hidden input
+    updateImagesInputFiles();
+  }
+
+  function removeImageAtIndex(index) {
+    if (index >= 0 && index < imageFiles.length) {
+      // revoke URL for that file (we will revoke all when re-render)
+      imageFiles.splice(index, 1);
+      renderImagePreviews();
+    }
+  }
+
+  // Validate and add images
+  function handleImageFiles(list) {
+    const newFiles = Array.from(list || []);
+    if (imageFiles.length + newFiles.length > IMG_MAX_FILES) {
+      showImageError(`You can upload up to ${IMG_MAX_FILES} images.`);
+    }
+
+    let added = 0;
+    for (const f of newFiles) {
+      if (imageFiles.length >= IMG_MAX_FILES) break;
+
+      if (!acceptedImageTypes.includes(f.type) && !f.type.startsWith('image/')) {
+        showImageError(`"${f.name}" is not a supported image type.`);
+        continue;
+      }
+      if (f.size > IMG_MAX_BYTES) {
+        showImageError(`"${f.name}" is too large. Max ${IMG_MAX_BYTES/(1024*1024)}MB.`);
+        continue;
+      }
+      imageFiles.push(f);
+      added++;
+    }
+
+    if (added > 0) renderImagePreviews();
+  }
+
+  // Video handling
+  function handleVideoFile(file) {
+    if (!file) return;
+
+    if (!file.type.startsWith('video/')) {
+      showVideoError('Selected file is not a video.');
+      return;
+    }
+    if (file.size > VIDEO_MAX_BYTES) {
+      showVideoError(`Video too large. Max ${(VIDEO_MAX_BYTES/(1024*1024))}MB.`);
+      return;
+    }
+
+    // Replace existing
+    videoFile = file;
+    updateVideoInputFile();
+
+    // show preview
+    const url = URL.createObjectURL(file);
+    videoPreview.src = url;
+    videoFileName.textContent = file.name;
+    videoFileSize.textContent = `${Math.round(file.size/1024)} KB`;
+    videoPreviewWrap.classList.remove('hidden');
+  }
+
+  function removeVideo() {
+    if (videoPreview.src) {
+      try { URL.revokeObjectURL(videoPreview.src); } catch (e) {}
+    }
+    videoFile = null;
+    updateVideoInputFile();
+    videoPreview.src = '';
+    videoFileName.textContent = '';
+    videoFileSize.textContent = '';
+    videoPreviewWrap.classList.add('hidden');
+  }
+
+  // Drag & drop helpers
+  function highlight(dropzone) {
+    dropzone.classList.add('border-emerald-400', 'bg-emerald-50');
+  }
+  function unhighlight(dropzone) {
+    dropzone.classList.remove('border-emerald-400', 'bg-emerald-50');
+  }
+
+  // Escape helper to avoid XSS from file names in previews
+  function escapeHtml(str) {
+    return (str + '').replace(/[&<>"'`=\/]/g, function (s) {
+      return ({
+        '&': '&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'": '&#39;', '/': '&#x2F;', '`':'&#x60;', '=':'&#x3D;'
+      })[s];
+    });
+  }
+
+  // Event wiring (images)
+  imagesDropzone.addEventListener('click', () => imagesInput.click());
+  imagesBrowseBtn.addEventListener('click', () => imagesInput.click());
+
+  imagesDropzone.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      ev.preventDefault();
+      imagesInput.click();
+    }
+  });
+
+  imagesInput.addEventListener('change', (e) => {
+    handleImageFiles(e.target.files);
+    // clear the native input value if you want to allow re-selecting same files later:
+    imagesInput.value = '';
+  });
+
+  imagesDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    highlight(imagesDropzone);
+  });
+  imagesDropzone.addEventListener('dragleave', (e) => {
+    unhighlight(imagesDropzone);
+  });
+  imagesDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    unhighlight(imagesDropzone);
+    if (e.dataTransfer && e.dataTransfer.files) {
+      handleImageFiles(e.dataTransfer.files);
+    }
+  });
+
+  // Video events
+  videoDropzone.addEventListener('click', () => videoInput.click());
+  videoDropzone.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      ev.preventDefault();
+      videoInput.click();
+    }
+  });
+
+  videoInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleVideoFile(e.target.files[0]);
+    }
+    // clear native input to allow same-file reselect
+    videoInput.value = '';
+  });
+
+  videoDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    highlight(videoDropzone);
+  });
+  videoDropzone.addEventListener('dragleave', (e) => {
+    unhighlight(videoDropzone);
+  });
+  videoDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    unhighlight(videoDropzone);
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleVideoFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  removeVideoBtn.addEventListener('click', removeVideo);
+
+  // Expose a tiny API on the dropzone element so other scripts can inspect selected files if needed:
+  imagesDropzone.getSelectedFiles = () => imageFiles.slice();
+  videoDropzone.getSelectedFile = () => videoFile;
+
+  // Clean up object URLs when the window unloads
+  window.addEventListener('beforeunload', () => {
+    objectUrls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+    if (videoPreview && videoPreview.src) { try { URL.revokeObjectURL(videoPreview.src); } catch (e) {} }
+  });
+
+  // init: no initial files
+})();
+</script>
 
 <script>
 let currentStep = 1;

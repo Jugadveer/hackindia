@@ -70,35 +70,6 @@ def signup_view(request):
     return redirect("landing")
 
 
-
-# def generate_signature(method, url, ts, body=""):
-#     msg = f"{ts}{method}{url}{body}".encode()
-#     return hmac.new(SUMSUB_SECRET_KEY.encode(), msg, hashlib.sha256).hexdigest()
-
-# def get_applicant_token(request):
-#     ts = str(int(time.time()))
-#     url = "/resources/accessTokens?userId=" + str(request.user.id) + "&levelName=basic-kyc-level"
-
-#     signature = generate_signature("POST", url, ts)
-
-#     headers = {
-#         "X-App-Token": SUMSUB_APP_TOKEN,
-#         "X-App-Access-Sig": signature,
-#         "X-App-Access-Ts": ts,
-#         "Accept": "application/json",
-#     }
-
-#     r = requests.post(SUMSUB_BASE_URL + url, headers=headers)
-#     return JsonResponse(r.json())
-
-
-# def kyc_verification(request):
-#     # Fetch applicant token from API
-#     r = requests.get(reverse("get_applicant_token"), request=request)
-#     applicant_token = r.json().get("token", "")
-#     return render(request, "kyc_verification.html", {"applicant_token": applicant_token})
-
-
 from .models import ListingImage, ListingDocument
 
 
@@ -114,19 +85,20 @@ def save_listing_step(request, step):
         if not listing:
             listing = Listing.objects.create(owner=request.user, status="draft")
 
-        if request.FILES.getlist("images"):
-            images = request.FILES.getlist("images")
-            for i, img in enumerate(images):
-                # Only create ListingImage if it's not the first image (to avoid duplication)
-                if i > 0:
-                    ListingImage.objects.create(listing=listing, image=img)
-                # Set the first image as cover image
-                if i == 0:
+        images = request.FILES.getlist("images")
+        if images:
+            for idx, img in enumerate(images):
+                # First image → also cover image
+                if idx == 0:
                     listing.cover_image = img
                     listing.save()
 
-        if request.FILES.get("video"):
-            listing.video = request.FILES["video"]
+                # Save ALL images in ListingImage (including the first one)
+                ListingImage.objects.create(listing=listing, image=img)
+
+        video = request.FILES.get("video")
+        if video:
+            listing.video = video
             listing.save()
 
     # Step 2: Property Details
@@ -135,9 +107,13 @@ def save_listing_step(request, step):
             listing.title = request.POST.get("title")
             listing.description = request.POST.get("description")
             listing.location = request.POST.get("location")
+            listing.city=request.POST.get("city"),
+            listing.state=request.POST.get("state"),
+            listing.country=request.POST.get("country"),
             listing.property_type = request.POST.get("property_type")
             listing.size = request.POST.get("size") or None
             listing.bedrooms = request.POST.get("bedrooms") or None
+            listing.bathrooms = request.POST.get("bathrooms") or None
             listing.year_built = request.POST.get("year_built") or None
             listing.ownership_type = request.POST.get("ownership_type")
             listing.save()
@@ -152,8 +128,6 @@ def save_listing_step(request, step):
             listing.utility_bills = request.FILES["utility_bills"]
         if request.FILES.get("kyc_doc"):
             listing.kyc_doc = request.FILES["kyc_doc"]
-        if request.FILES.getlist("other_docs"):
-            listing.other_docs = request.FILES.getlist("other_docs")
         listing.save()
 
     # Step 4: Pricing
@@ -169,25 +143,6 @@ def save_listing_step(request, step):
 
     return JsonResponse({"success": True, "listing_id": listing.id if listing else None})
 
-
-
-
-# def submit_listing(request):
-#     if request.method == 'POST':
-#         listing_id = request.POST.get('listing_id')
-#         if not listing_id:
-#             return JsonResponse({'success': False, 'error': 'Missing listing ID'})
-
-#         try:
-#             listing = Listing.objects.get(id=listing_id)
-#         except Listing.DoesNotExist:
-#             return JsonResponse({'success': False, 'error': f'Listing {listing_id} not found'})
-
-#         listing.status = 'submitted'
-#         listing.save()
-#         return JsonResponse({'success': True})
-
-#     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 
 
@@ -292,7 +247,13 @@ def upload_listing_to_ipfs(request):
 
 
 
+# def home(request):
+#     return render(request, 'landing.html')
+
+
 def home(request):
+    if request.user.is_authenticated:
+        return redirect('marketplace')  # use your marketplace URL name here
     return render(request, 'landing.html')
 
 
