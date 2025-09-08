@@ -86,21 +86,14 @@ def save_listing_step(request, step):
         if not listing:
             listing = Listing.objects.create(owner=request.user, status="draft")
 
-        images = request.FILES.getlist("images")
-        if images:
-            for idx, img in enumerate(images):
-                # First image → also cover image
-                if idx == 0:
-                    listing.cover_image = img
-                    listing.save()
+        if request.FILES.get("images"):
+            listing.cover_image = request.FILES["images"]
 
-                # Save ALL images in ListingImage (including the first one)
-                ListingImage.objects.create(listing=listing, image=img)
+    # Save optional video
+        if request.FILES.get("video"):
+            listing.video = request.FILES["video"]
 
-        video = request.FILES.get("video")
-        if video:
-            listing.video = video
-            listing.save()
+        listing.save()
 
 
     # Step 2: Property Details
