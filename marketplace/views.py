@@ -102,15 +102,16 @@ def save_listing_step(request, step):
             listing.video = video
             listing.save()
 
+
     # Step 2: Property Details
     elif step == 2:
         if listing:
             listing.title = request.POST.get("title")
             listing.description = request.POST.get("description")
             listing.location = request.POST.get("location")
-            listing.city=request.POST.get("city"),
-            listing.state=request.POST.get("state"),
-            listing.country=request.POST.get("country"),
+            listing.city=request.POST.get("city")
+            listing.state=request.POST.get("state")
+            listing.country=request.POST.get("country")
             listing.property_type = request.POST.get("property_type")
             listing.size = request.POST.get("size") or None
             listing.bedrooms = request.POST.get("bedrooms") or None
@@ -265,6 +266,14 @@ def home(request):
 
 
 def dashboard(request):
+    return render(request, 'dashboard.html')
+
+
+def buyer(request):
+    return render(request, 'buyer.html')
+
+
+def seller(request):
     """User dashboard showing their listings"""
     if not request.user.is_authenticated:
         return redirect('login')
@@ -328,8 +337,7 @@ def dashboard(request):
         'kyc_status': kyc_status,
         'debug_info': f"User: {request.user.username}, Listings: {user_listings.count()}"
     }
-    return render(request, 'dashboard.html', context)
-
+    return render(request, 'seller.html', context)
 
 def property_detail(request, listing_id):
     """Detailed property view with full information"""
